@@ -36,6 +36,7 @@
 #include "station_func.h"
 #include "company_cmd.h"
 #include "economy_cmd.h"
+#include "economy_func.h"
 #include "group_cmd.h"
 #include "group_gui.h"
 #include "misc_cmd.h"
@@ -380,6 +381,10 @@ struct CompanyFinancesWindow : Window {
 			}
 
 			case WID_CF_INTEREST_RATE:
+				if (_settings_game.economy.islm_enabled) {
+					const int32_t charged = std::max<int32_t>(_economy.macro_interest_bp, 0);
+					return GetString(STR_FINANCES_INTEREST_RATE_MACRO, charged, 2);
+				}
 				return GetString(STR_FINANCES_INTEREST_RATE, _settings_game.difficulty.initial_interest);
 
 			case WID_CF_MAXLOAN_VALUE: {

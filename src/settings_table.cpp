@@ -56,6 +56,7 @@
 #include "station_base.h"
 #include "aircraft.h"
 #include "aircraft_cmd.h"
+#include "macro_economy.h"
 
 #include "table/strings.h"
 #include "table/settings.h"
@@ -386,6 +387,11 @@ static void AircraftRangeChanged(int32_t)
 			DeleteVehicleNews(v->index, AdviceType::AircraftDestinationTooFar);
 		}
 	}
+}
+
+static void MacroParametersChanged(int32_t)
+{
+	RefreshMacroEconomy();
 }
 
 static void TownFoundingChanged(int32_t)

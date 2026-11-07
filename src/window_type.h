@@ -743,6 +743,12 @@ enum class WindowClass : uint16_t {
 	 */
 	Help,
 
+	/**
+	 * IS-LM and Phillips-curve policy window; %Window numbers:
+	 *   - 0 = #MacroEconomyWidgets
+	 */
+	MacroEconomy,
+
 	Invalid = 0xFFFF, ///< Invalid window.
 };
 

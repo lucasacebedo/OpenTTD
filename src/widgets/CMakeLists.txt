@@ -27,6 +27,7 @@ add_files(
     intro_widget.h
     league_widget.h
     link_graph_legend_widget.h
+    macro_economy_widget.h
     main_widget.h
     misc_widget.h
     music_widget.h

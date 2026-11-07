@@ -263,6 +263,9 @@ add_files(
     league_type.h
     library_loader.h
     livery.h
+    macro_economy.cpp
+    macro_economy.h
+    macro_economy_gui.cpp
     main_gui.cpp
     map.cpp
     map_func.h

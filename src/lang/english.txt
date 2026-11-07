@@ -389,7 +389,7 @@ STR_TOOLBAR_TOOLTIP_OPTIONS                                     :{BLACK}Options 
 STR_TOOLBAR_TOOLTIP_SAVE_GAME_ABANDON_GAME                      :{BLACK}Save, load or abandon game, exit program
 STR_TOOLBAR_TOOLTIP_DISPLAY_MAP                                 :{BLACK}Open map, extra viewport, cargo flow or list of signs
 STR_TOOLBAR_TOOLTIP_DISPLAY_TOWN_DIRECTORY                      :{BLACK}Open town directory or found town
-STR_TOOLBAR_TOOLTIP_DISPLAY_SUBSIDIES                           :{BLACK}Open subsidy list
+STR_TOOLBAR_TOOLTIP_DISPLAY_SUBSIDIES                           :{BLACK}Open subsidies or monetary and fiscal policy
 STR_TOOLBAR_TOOLTIP_DISPLAY_LIST_OF_COMPANY_STATIONS            :{BLACK}Open list of company's stations
 STR_TOOLBAR_TOOLTIP_DISPLAY_COMPANY_FINANCES                    :{BLACK}Open company finances information
 STR_TOOLBAR_TOOLTIP_DISPLAY_COMPANY_GENERAL                     :{BLACK}Open general company information
@@ -1421,6 +1421,73 @@ STR_CONFIG_SETTING_DISTANT_JOIN_STATIONS_HELPTEXT               :Allow adding pa
 
 STR_CONFIG_SETTING_INFLATION                                    :Inflation: {STRING2}
 STR_CONFIG_SETTING_INFLATION_HELPTEXT                           :Enable inflation in the economy, where costs are slightly faster rising than payments
+
+STR_CONFIG_SETTING_MACRO_PAGE                                   :IS-LM and Phillips curve
+STR_CONFIG_SETTING_ISLM_ENABLED                                 :IS-LM and Phillips curve: {STRING2}
+STR_CONFIG_SETTING_ISLM_ENABLED_HELPTEXT                        :Drive loan interest, price inflation and cargo activity from a closed-economy IS-LM equilibrium and an expectations-augmented Phillips curve. While this is on, it replaces the classic inflation path. Every coefficient below can be changed during a game
+STR_CONFIG_SETTING_ISLM_GOVERNMENT                              :Government spending: {STRING2}
+STR_CONFIG_SETTING_ISLM_GOVERNMENT_HELPTEXT                     :Fiscal policy instrument G, in the same index points as output. Raising it shifts the IS curve out
+STR_CONFIG_SETTING_ISLM_TAX_RATE                                :Marginal tax rate: {STRING2}
+STR_CONFIG_SETTING_ISLM_TAX_RATE_HELPTEXT                       :Fiscal policy instrument t. Tax revenue is autonomous tax plus this percent of output
+STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX                          :Autonomous tax: {STRING2}
+STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX_HELPTEXT                 :Fiscal policy instrument T0, the part of taxes that does not depend on output
+STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY                            :Nominal money supply: {STRING2}
+STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY_HELPTEXT                   :Monetary policy instrument M. Real balances are M times 1000, divided by the macro price index. Raising M shifts the LM curve out
+STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT                          :Natural output: {STRING2}
+STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT_HELPTEXT                 :Natural level of output Y*. The Phillips curve adds inflation when equilibrium output is above this
+STR_CONFIG_SETTING_ISLM_CONSUMPTION                             :Autonomous consumption: {STRING2}
+STR_CONFIG_SETTING_ISLM_CONSUMPTION_HELPTEXT                    :Consumption at zero disposable income, C0
+STR_CONFIG_SETTING_ISLM_MPC                                     :Marginal propensity to consume: {STRING2}
+STR_CONFIG_SETTING_ISLM_MPC_HELPTEXT                            :Share of extra disposable income that is consumed. Kept below 100 percent so the goods market has a finite multiplier
+STR_CONFIG_SETTING_ISLM_INVESTMENT                              :Autonomous investment: {STRING2}
+STR_CONFIG_SETTING_ISLM_INVESTMENT_HELPTEXT                     :Investment at a zero interest rate, I0
+STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY                  :Investment interest sensitivity: {STRING2}
+STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY_HELPTEXT         :How many output points investment loses for each percentage point of the interest rate
+STR_CONFIG_SETTING_ISLM_MONEY_INCOME                            :Money demand income sensitivity: {STRING2}
+STR_CONFIG_SETTING_ISLM_MONEY_INCOME_HELPTEXT                   :Percent of output held as real balances when the interest rate is zero
+STR_CONFIG_SETTING_ISLM_MONEY_INTEREST                          :Money demand interest sensitivity: {STRING2}
+STR_CONFIG_SETTING_ISLM_MONEY_INTEREST_HELPTEXT                 :How many real-balance points money demand loses for each percentage point of the interest rate
+STR_CONFIG_SETTING_ISLM_INITIAL_PRICE                           :Initial macro price index: {STRING2}
+STR_CONFIG_SETTING_ISLM_INITIAL_PRICE_HELPTEXT                  :Price index used when a game starts. 1000 is the base at which nominal money equals real money. It then moves with Phillips-curve inflation
+STR_CONFIG_SETTING_ISLM_EXPECTED_INFLATION                      :Initial expected inflation: {STRING2}
+STR_CONFIG_SETTING_ISLM_EXPECTED_INFLATION_HELPTEXT             :Inflation expectation at the start of a game, in percent per year. The same rate is applied to prices between 1920 and the start year. Expectations then adapt to realised inflation
+STR_CONFIG_SETTING_ISLM_PHILLIPS_SLOPE                          :Phillips curve slope: {STRING2}
+STR_CONFIG_SETTING_ISLM_PHILLIPS_SLOPE_HELPTEXT                 :Percent of the output gap added to expected inflation. 50 means a 10 percent boom adds 5 percentage points of inflation
+STR_CONFIG_SETTING_ISLM_ADAPTATION                              :Expectation adaptation: {STRING2}
+STR_CONFIG_SETTING_ISLM_ADAPTATION_HELPTEXT                     :Percent of an inflation surprise absorbed into expected inflation over a year. One twelfth of that share is applied each economy month
+STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION                       :Cargo payment inflation share: {STRING2}
+STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION_HELPTEXT              :Percent of Phillips-curve inflation applied to cargo payments. 100 keeps real payment rates stable. Less than 100 makes costs rise faster than revenue, as in the classic game
+STR_CONFIG_SETTING_ISLM_CARGO_LINK                              :Output gap passed into production: {STRING2}
+STR_CONFIG_SETTING_ISLM_CARGO_LINK_HELPTEXT                     :Percent of the output gap applied to town and industry cargo. 100 makes a 10 percent boom raise production by 10 percent. The effect is limited to between 50 and 200 percent of normal production
+
+STR_MACRO_ECONOMY_MENU                                          :Monetary and fiscal policy
+STR_MACRO_ECONOMY_CAPTION                                       :{WHITE}Monetary and fiscal policy
+STR_MACRO_DISABLED                                              :{BLACK}The IS-LM model is off. Enable it under Settings, Accounting, IS-LM and Phillips curve.
+STR_MACRO_NO_EQUILIBRIUM                                        :{BLACK}These parameters do not produce an equilibrium. Lower the marginal propensity to consume or raise an interest sensitivity.
+STR_MACRO_OUTPUT                                                :{BLACK}Output {COMMA} (natural {COMMA}, gap {RAW_STRING})
+STR_MACRO_RATES                                                 :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, expected inflation {RAW_STRING}
+STR_MACRO_PRICES                                                :{BLACK}Price index {DECIMAL}, real money {COMMA}
+STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, investment {COMMA}, government {COMMA}, taxes {COMMA}
+STR_MACRO_DEFICIT                                               :{BLACK}Budget balance G - T: {COMMA}. Cargo activity: {DECIMAL}%
+STR_MACRO_INSTRUMENTS                                           :{BLACK}Now: G {COMMA}, tax {NUM}%, autonomous tax {COMMA}, money {COMMA}
+STR_MACRO_HUNDREDTHS                                            :{DECIMAL}%
+STR_MACRO_HUNDREDTHS_NEGATIVE                                   :-{DECIMAL}%
+STR_MACRO_G_DOWN                                                :G -10
+STR_MACRO_G_UP                                                  :G +10
+STR_MACRO_G_TOOLTIP                                             :{BLACK}Change government spending. This shifts the IS curve
+STR_MACRO_TAX_DOWN                                              :t -1
+STR_MACRO_TAX_UP                                                :t +1
+STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Change the marginal tax rate
+STR_MACRO_T0_DOWN                                               :T -10
+STR_MACRO_T0_UP                                                 :T +10
+STR_MACRO_T0_TOOLTIP                                            :{BLACK}Change autonomous taxes
+STR_MACRO_M_DOWN                                                :M -20
+STR_MACRO_M_UP                                                  :M +20
+STR_MACRO_M_TOOLTIP                                             :{BLACK}Change the nominal money supply. This shifts the LM curve
+STR_MACRO_OPEN_SETTINGS                                         :All parameters
+STR_MACRO_OPEN_SETTINGS_TOOLTIP                                 :{BLACK}Open the settings window. Every IS and LM coefficient, and the Phillips curve, can be edited there
+STR_NEWS_MACRO_REPORT                                           :{BIG_FONT}{BLACK}Central bank report{}{}Interest {NUM}%, inflation {NUM}% and expected inflation {NUM}%.
+STR_FINANCES_INTEREST_RATE_MACRO                                :{WHITE}Loan interest: {BLACK}{DECIMAL}%
 
 STR_CONFIG_SETTING_MAX_BRIDGE_LENGTH                            :Maximum bridge length: {STRING2}
 STR_CONFIG_SETTING_MAX_BRIDGE_LENGTH_HELPTEXT                   :Maximum length for building bridges

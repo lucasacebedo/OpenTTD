@@ -3437,6 +3437,22 @@ bool AfterLoadGame()
 	/* Restore the signals */
 	ResetSignalHandlers();
 
+	if (IsSavegameVersionBefore(SaveLoadVersion::MacroIsLm)) {
+		/* Old saves keep the classic interest rate and inflation. */
+		_settings_game.economy.islm_enabled = false;
+		_economy.macro_output = 0;
+		_economy.macro_interest_bp = 0;
+		_economy.macro_inflation_bp = 0;
+		_economy.macro_expected_inflation_bp = 0;
+		_economy.macro_price_index = 0;
+		_economy.macro_output_gap_bp = 0;
+		_economy.macro_consumption = 0;
+		_economy.macro_investment = 0;
+		_economy.macro_tax_revenue = 0;
+		_economy.macro_real_money = 0;
+		_economy.macro_ok = 0;
+	}
+
 	AfterLoadLinkGraphs();
 
 	CheckGroundVehiclesAtCorrectZ();

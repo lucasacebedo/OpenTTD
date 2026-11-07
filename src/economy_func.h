@@ -18,6 +18,7 @@
 #include "settings_type.h"
 #include "source_type.h"
 #include "core/random_func.hpp"
+#include "macro_economy.h"
 
 void ResetPriceBaseMultipliers();
 void SetPriceBaseMultiplier(Price price, int factor);
@@ -61,12 +62,15 @@ inline bool EconomyIsInRecession()
 static uint ScaleByInverseCargoScale(uint num, bool town)
 {
 	uint16_t percentage = (town ? _settings_game.economy.town_cargo_scale : _settings_game.economy.industry_cargo_scale);
+	uint activity = MacroActivityPermyriad();
 
 	/* We might not need to do anything. */
-	if (percentage == 100) return num;
+	if (percentage == 100 && activity == 10000) return num;
 
 	/* Never return 0, since we often divide by this number. */
-	return std::max((num * 100) / percentage, 1u);
+	uint64_t denom = static_cast<uint64_t>(percentage) * activity;
+	if (denom == 0) return std::max(num, 1u);
+	return std::max<uint>(static_cast<uint>(static_cast<uint64_t>(num) * 1000000 / denom), 1u);
 }
 
 /**
@@ -83,11 +87,12 @@ inline uint ScaleByCargoScale(uint num, bool town)
 	if (num == 0) return num;
 
 	uint16_t percentage = (town ? _settings_game.economy.town_cargo_scale : _settings_game.economy.industry_cargo_scale);
+	uint activity = MacroActivityPermyriad();
 
 	/* We might not need to do anything. */
-	if (percentage == 100) return num;
+	if (percentage == 100 && activity == 10000) return num;
 
-	uint scaled = (num * percentage) / 100;
+	uint scaled = static_cast<uint>(static_cast<uint64_t>(num) * percentage * activity / 1000000);
 
 	/* We might round down to 0, so we compensate with a random chance approximately equal to the economy scale,
 	 *  e.g. at 25% scale there's a 1/4 chance to round up to 1. */

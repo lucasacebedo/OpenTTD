@@ -524,18 +524,23 @@ static CallBackFunction MenuClickTown(int index)
 
 static CallBackFunction ToolbarSubsidiesClick(Window *w)
 {
-	PopupMainToolbarMenu(w, WID_TN_SUBSIDIES, {STR_SUBSIDIES_MENU_SUBSIDIES});
+	PopupMainToolbarMenu(w, WID_TN_SUBSIDIES, {STR_SUBSIDIES_MENU_SUBSIDIES, STR_MACRO_ECONOMY_MENU});
 	return CallBackFunction::None;
 }
 
 /**
  * Handle click on the entry in the Subsidies menu.
  *
+ * @param index Menu entry number.
  * @return #CallBackFunction::None
  */
-static CallBackFunction MenuClickSubsidies(int)
+static CallBackFunction MenuClickSubsidies(int index)
 {
-	ShowSubsidiesList();
+	switch (index) {
+		case 0: ShowSubsidiesList(); break;
+		case 1: ShowMacroEconomy(); break;
+		default: break;
+	}
 	return CallBackFunction::None;
 }
 

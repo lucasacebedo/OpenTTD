@@ -61,6 +61,9 @@ void ShowBuildIndustryWindow();
 /* subsidy_gui.cpp */
 void ShowSubsidiesList();
 
+/* macro_economy_gui.cpp */
+void ShowMacroEconomy();
+
 /* story_gui.cpp */
 void ShowStoryBook(CompanyID company, StoryPageID page_id = StoryPageID::Invalid(), bool centered = false);
 

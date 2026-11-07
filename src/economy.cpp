@@ -42,6 +42,8 @@
 #include "vehicle_gui.h"
 #include "waypoint_base.h"
 #include "economy_base.h"
+#include "economy_func.h"
+#include "macro_economy.h"
 #include "core/pool_func.hpp"
 #include "core/backup_type.hpp"
 #include "core/container_func.hpp"
@@ -819,10 +821,11 @@ static void CompaniesPayInterest()
 		 * taking a loan) we make companies pay interest on negative cash as well,
 		 * except if infinite money is enabled.
 		 */
-		Money yearly_fee = c->current_loan * _economy.interest_rate / 100;
+		const int interest_bp = _settings_game.economy.islm_enabled ? std::max<int>(_economy.macro_interest_bp, 0) : _economy.interest_rate * 100;
+		Money yearly_fee = c->current_loan * interest_bp / 10000;
 		Money available_money = GetAvailableMoney(c->index);
 		if (available_money < 0) {
-			yearly_fee += -available_money * _economy.interest_rate / 100;
+			yearly_fee += -available_money * interest_bp / 10000;
 		}
 		Money up_to_previous_month = yearly_fee * TimerGameEconomy::month / 12;
 		Money up_to_this_month = yearly_fee * (TimerGameEconomy::month + 1) / 12;
@@ -900,13 +903,18 @@ void StartupIndustryDailyChanges(bool init_counter)
 
 void StartupEconomy()
 {
-	_economy.interest_rate = _settings_game.difficulty.initial_interest;
-	_economy.infl_amount = _settings_game.difficulty.initial_interest;
-	_economy.infl_amount_pr = std::max(0, _settings_game.difficulty.initial_interest - 1);
+	if (_settings_game.economy.islm_enabled) {
+		ResetMacroEconomy();
+	} else {
+		_economy.interest_rate = _settings_game.difficulty.initial_interest;
+		_economy.infl_amount = _settings_game.difficulty.initial_interest;
+		_economy.infl_amount_pr = std::max(0, _settings_game.difficulty.initial_interest - 1);
+	}
 	_economy.fluct = GB(Random(), 0, 8) + 168;
 
-	if (_settings_game.economy.inflation) {
-		/* Apply inflation that happened before our game start year. */
+	if (_settings_game.economy.inflation || _settings_game.economy.islm_enabled) {
+		/* Apply inflation that happened before our game start year.
+		 * With the macro model on, that historical rate is the initial expected inflation. */
 		int months = (std::min(TimerGameCalendar::year, CalendarTime::ORIGINAL_MAX_YEAR) - CalendarTime::ORIGINAL_BASE_YEAR).base() * 12;
 		for (int i = 0; i < months; i++) {
 			AddInflation(false);
@@ -926,6 +934,17 @@ void StartupEconomy()
 void InitializeEconomy()
 {
 	_economy.inflation_prices = _economy.inflation_payment = 1 << 16;
+	_economy.macro_output = 0;
+	_economy.macro_interest_bp = 0;
+	_economy.macro_inflation_bp = 0;
+	_economy.macro_expected_inflation_bp = 0;
+	_economy.macro_price_index = 0;
+	_economy.macro_output_gap_bp = 0;
+	_economy.macro_consumption = 0;
+	_economy.macro_investment = 0;
+	_economy.macro_tax_revenue = 0;
+	_economy.macro_real_money = 0;
+	_economy.macro_ok = 0;
 	ClearCargoPickupMonitoring();
 	ClearCargoDeliveryMonitoring();
 }
@@ -1967,7 +1986,8 @@ void LoadUnloadStation(Station *st)
  */
 static const IntervalTimer<TimerGameCalendar> _calendar_inflation_monthly({TimerGameCalendar::Trigger::Month, TimerGameCalendar::Priority::Company}, [](auto)
 {
-	if (_settings_game.economy.inflation) {
+	/* The Phillips curve replaces this path while the macro model is enabled. */
+	if (_settings_game.economy.inflation && !_settings_game.economy.islm_enabled) {
 		AddInflation();
 		RecomputePrices();
 	}
@@ -1978,6 +1998,7 @@ static const IntervalTimer<TimerGameCalendar> _calendar_inflation_monthly({Timer
  */
 static const IntervalTimer<TimerGameEconomy> _economy_companies_monthly({ TimerGameEconomy::Trigger::Month, TimerGameEconomy::Priority::Company }, [](auto)
 {
+	MacroEconomyMonthly();
 	CompaniesGenStatistics();
 	CompaniesPayInterest();
 	HandleEconomyFluctuations();

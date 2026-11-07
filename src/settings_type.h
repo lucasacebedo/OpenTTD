@@ -650,6 +650,25 @@ struct EconomySettings {
 	uint16_t industry_cargo_scale; ///< scale cargo production of industries by this percentage.
 	uint8_t cargo_aging_rate; ///< scale the delivery time factor of cargo delivery payments by this percentage.
 	uint16_t town_min_distance; ///< minimum distance between towns.
+
+	bool islm_enabled; ///< solve a closed-economy IS-LM model and an expectations-augmented Phillips curve
+	uint16_t islm_natural_output; ///< natural output Y* in index points
+	uint16_t islm_autonomous_consumption; ///< autonomous consumption C0
+	uint8_t islm_mpc_percent; ///< marginal propensity to consume, percent
+	uint16_t islm_autonomous_investment; ///< autonomous investment I0, at a zero interest rate
+	uint16_t islm_investment_sensitivity; ///< investment fall per percentage point of interest
+	uint16_t islm_government_spending; ///< fiscal instrument: government spending G
+	uint16_t islm_autonomous_tax; ///< fiscal instrument: autonomous tax T0
+	uint8_t islm_tax_rate_percent; ///< fiscal instrument: marginal tax rate, percent
+	uint16_t islm_money_supply; ///< monetary instrument: nominal money supply M
+	uint8_t islm_money_income_percent; ///< money demand income sensitivity, percent of output
+	uint16_t islm_money_interest_sensitivity; ///< money demand fall per percentage point of interest
+	uint16_t islm_initial_price_index; ///< price index at the start of a game; 1000 is the base
+	uint8_t islm_initial_expected_inflation; ///< expected inflation at the start, percent per year
+	uint8_t islm_phillips_slope_percent; ///< extra inflation, in percent of the output gap
+	uint8_t islm_expectation_adaptation_percent; ///< share of an inflation surprise built into expectations each year
+	uint8_t islm_payment_inflation_percent; ///< share of Phillips inflation passed into cargo payments
+	uint8_t islm_output_gap_cargo_link; ///< share of the output gap passed into town and industry production
 };
 
 struct LinkGraphSettings {

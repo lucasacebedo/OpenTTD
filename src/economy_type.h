@@ -52,6 +52,21 @@ struct Economy {
 	uint64_t inflation_prices;              ///< Cumulated inflation of prices since game start; 16 bit fractional part
 	uint64_t inflation_payment;             ///< Cumulated inflation of cargo payment since game start; 16 bit fractional part
 
+	/* IS-LM equilibrium and expectations-augmented Phillips curve.
+	 * Rates suffixed _bp are hundredths of a percent: 250 means 2.50%.
+	 * Flow variables are index points, the same unit as natural output. */
+	int32_t macro_output;                   ///< Equilibrium real output, Y
+	int32_t macro_interest_bp;              ///< Equilibrium nominal interest, hundredths of a percent
+	int32_t macro_inflation_bp;             ///< Phillips-curve inflation, hundredths of a percent per year
+	int32_t macro_expected_inflation_bp;    ///< Adaptive inflation expectation, hundredths of a percent per year
+	int32_t macro_price_index;              ///< Macro price index times 100. 100000 is the base of 1000.00 used to deflate money
+	int32_t macro_output_gap_bp;            ///< (Y - Y*) / Y* in hundredths of a percent
+	int32_t macro_consumption;              ///< Equilibrium consumption
+	int32_t macro_investment;               ///< Equilibrium investment
+	int32_t macro_tax_revenue;              ///< Equilibrium tax revenue
+	int32_t macro_real_money;               ///< Real money balances, M / P
+	uint8_t macro_ok;                       ///< 1 when the last IS-LM solve found an equilibrium
+
 	/* Old stuff for savegame conversion only */
 	Money old_max_loan_unround;           ///< Old: Unrounded max loan
 	uint16_t old_max_loan_unround_fract;    ///< Old: Fraction of the unrounded max loan

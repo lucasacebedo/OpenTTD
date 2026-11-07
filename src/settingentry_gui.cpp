@@ -718,6 +718,28 @@ SettingsContainer &GetSettingsTree()
 			accounting->Add(new SettingEntry("difficulty.vehicle_costs"));
 			accounting->Add(new SettingEntry("difficulty.construction_cost"));
 			accounting->Add(new SettingEntry("economy.cargo_aging_rate"));
+
+			SettingsPage *macro = accounting->Add(new SettingsPage(STR_CONFIG_SETTING_MACRO_PAGE));
+			{
+				macro->Add(new SettingEntry("economy.islm_enabled"));
+				macro->Add(new SettingEntry("economy.islm_government_spending"));
+				macro->Add(new SettingEntry("economy.islm_tax_rate_percent"));
+				macro->Add(new SettingEntry("economy.islm_autonomous_tax"));
+				macro->Add(new SettingEntry("economy.islm_money_supply"));
+				macro->Add(new SettingEntry("economy.islm_natural_output"));
+				macro->Add(new SettingEntry("economy.islm_autonomous_consumption"));
+				macro->Add(new SettingEntry("economy.islm_mpc_percent"));
+				macro->Add(new SettingEntry("economy.islm_autonomous_investment"));
+				macro->Add(new SettingEntry("economy.islm_investment_sensitivity"));
+				macro->Add(new SettingEntry("economy.islm_money_income_percent"));
+				macro->Add(new SettingEntry("economy.islm_money_interest_sensitivity"));
+				macro->Add(new SettingEntry("economy.islm_initial_price_index"));
+				macro->Add(new SettingEntry("economy.islm_initial_expected_inflation"));
+				macro->Add(new SettingEntry("economy.islm_phillips_slope_percent"));
+				macro->Add(new SettingEntry("economy.islm_expectation_adaptation_percent"));
+				macro->Add(new SettingEntry("economy.islm_payment_inflation_percent"));
+				macro->Add(new SettingEntry("economy.islm_output_gap_cargo_link"));
+			}
 		}
 
 		SettingsPage *vehicles = main->Add(new SettingsPage(STR_CONFIG_SETTING_VEHICLES));

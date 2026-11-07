@@ -54,6 +54,17 @@ static const SaveLoad _economy_desc[] = {
 	SaveLoad::Variable<VarFileType::U8>("infl_amount", SLE_OBJECT_ADDRESS(Economy, infl_amount)),
 	SaveLoad::Variable<VarFileType::U8>("infl_amount_pr", SLE_OBJECT_ADDRESS(Economy, infl_amount_pr)),
 	SaveLoad::Variable<VarFileType::U32>("industry_daily_change_counter", SLE_OBJECT_ADDRESS(Economy, industry_daily_change_counter), SaveLoadVersion::SpreadIndustryProductionChanges),
+	SaveLoad::Variable<VarFileType::I32>("macro_output", SLE_OBJECT_ADDRESS(Economy, macro_output), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_interest_bp", SLE_OBJECT_ADDRESS(Economy, macro_interest_bp), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_inflation_bp", SLE_OBJECT_ADDRESS(Economy, macro_inflation_bp), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_expected_inflation_bp", SLE_OBJECT_ADDRESS(Economy, macro_expected_inflation_bp), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_price_index", SLE_OBJECT_ADDRESS(Economy, macro_price_index), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_output_gap_bp", SLE_OBJECT_ADDRESS(Economy, macro_output_gap_bp), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_consumption", SLE_OBJECT_ADDRESS(Economy, macro_consumption), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_investment", SLE_OBJECT_ADDRESS(Economy, macro_investment), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_tax_revenue", SLE_OBJECT_ADDRESS(Economy, macro_tax_revenue), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::I32>("macro_real_money", SLE_OBJECT_ADDRESS(Economy, macro_real_money), SaveLoadVersion::MacroIsLm),
+	SaveLoad::Variable<VarFileType::U8>("macro_ok", SLE_OBJECT_ADDRESS(Economy, macro_ok), SaveLoadVersion::MacroIsLm),
 };
 
 /** Economy variables */
