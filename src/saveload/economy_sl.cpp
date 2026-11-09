@@ -16,6 +16,7 @@
 #include "../economy_func.h"
 #include "../economy_base.h"
 #include "../vehicle_base.h"
+#include "../economylab/accounts.h"
 
 #include "../safeguards.h"
 
@@ -167,15 +168,66 @@ struct CAPYChunkHandler : ChunkHandler {
 	}
 };
 
+static const SaveLoad _economylab_desc[] = {
+	SaveLoad::Variable<VarFileType::U16>("schema", SLE_OBJECT_ADDRESS(EconomyLabPersistent, schema)),
+	SaveLoad::Variable<VarFileType::U8>("generation", SLE_OBJECT_ADDRESS(EconomyLabPersistent, generation)),
+	SaveLoad::Variable<VarFileType::U8>("anchored", SLE_OBJECT_ADDRESS(EconomyLabPersistent, anchored)),
+	SaveLoad::Variable<VarFileType::I64>("sequence", SLE_OBJECT_ADDRESS(EconomyLabPersistent, sequence)),
+	SaveLoad::Variable<VarFileType::I64>("household_nominal", SLE_OBJECT_ADDRESS(EconomyLabPersistent, household_nominal)),
+	SaveLoad::Variable<VarFileType::I64>("freight_nominal", SLE_OBJECT_ADDRESS(EconomyLabPersistent, freight_nominal)),
+	SaveLoad::Variable<VarFileType::I64>("subsidy_nominal", SLE_OBJECT_ADDRESS(EconomyLabPersistent, subsidy_nominal)),
+	SaveLoad::Variable<VarFileType::I64>("potential_base", SLE_OBJECT_ADDRESS(EconomyLabPersistent, potential_base)),
+	SaveLoad::Variable<VarFileType::I64>("population_base", SLE_OBJECT_ADDRESS(EconomyLabPersistent, population_base)),
+	SaveLoad::Variable<VarFileType::I64>("capacity_base", SLE_OBJECT_ADDRESS(EconomyLabPersistent, capacity_base)),
+	SaveLoad::Variable<VarFileType::I64>("capital_base", SLE_OBJECT_ADDRESS(EconomyLabPersistent, capital_base)),
+	SaveLoad::Array<VarFileType::I64, 64>("delivered", SLE_OBJECT_ADDRESS(EconomyLabPersistent, delivered)),
+};
+
+static const SaveLoadCompat _economylab_sl_compat[] = {
+	SLC_VAR("schema"),
+	SLC_VAR("generation"),
+	SLC_VAR("anchored"),
+	SLC_VAR("sequence"),
+	SLC_VAR("household_nominal"),
+	SLC_VAR("freight_nominal"),
+	SLC_VAR("subsidy_nominal"),
+	SLC_VAR("potential_base"),
+	SLC_VAR("population_base"),
+	SLC_VAR("capacity_base"),
+	SLC_VAR("capital_base"),
+	SLC_VAR("delivered"),
+};
+
+struct ELABChunkHandler : ChunkHandler {
+	ELABChunkHandler() : ChunkHandler("ELAB", ChunkType::Table) {}
+
+	void Save() const override
+	{
+		SlTableHeader(_economylab_desc);
+		SlSetArrayIndex(0);
+		SlObject(&EconomyLabPersistentState(), _economylab_desc);
+	}
+
+	void Load() const override
+	{
+		const std::vector<SaveLoad> slt = SlCompatTableHeader(_economylab_desc, _economylab_sl_compat);
+		if (!IsSavegameVersionBefore(SaveLoadVersion::RiffToArray) && SlIterateArray() == -1) return;
+		SlObject(&EconomyLabPersistentState(), slt);
+		if (!IsSavegameVersionBefore(SaveLoadVersion::RiffToArray) && SlIterateArray() != -1) SlErrorCorrupt("Too many ELAB entries");
+	}
+};
+
 static const CAPYChunkHandler CAPY;
 static const PRICChunkHandler PRIC;
 static const CAPRChunkHandler CAPR;
 static const ECMYChunkHandler ECMY;
+static const ELABChunkHandler ELAB;
 static const ChunkHandlerRef economy_chunk_handlers[] = {
 	CAPY,
 	PRIC,
 	CAPR,
 	ECMY,
+	ELAB,
 };
 
 extern const ChunkHandlerTable _economy_chunk_handlers(economy_chunk_handlers);

@@ -1,0 +1,79 @@
+# Public variables of the economy lab, conversion version 1.
+# A cargo piece, a current pound, a 1920 pound and a policy point are different units.
+
+conversion_version: 1
+policy_point_to_real_pounds: 1000
+payment_index_base: 65536
+
+variables:
+  - id: gdp_production
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: transport deliveries and infrastructure maintenance
+    equation: E-006
+    code: _economy.macro_output
+  - id: logistics_volume
+    unit: cargo_pieces
+    kind: flow
+    frequency: month
+    source: accepted deliveries, kept by cargo type in the lab
+    equation: none
+    code: _economy.macro_game_output
+    note: Not GDP. Pieces of different cargoes are not a value.
+  - id: discrepancy
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: national accounts
+    equation: E-008
+    code: _economy.macro_exogenous_output
+  - id: consumption
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: passenger and mail tariffs
+    equation: E-007
+    code: _economy.macro_consumption
+  - id: investment
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: construction and new vehicles
+    equation: E-007
+    code: _economy.macro_investment
+  - id: government_purchases
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: economy.islm_government_spending times policy_point_to_real_pounds
+    equation: E-007
+    code: _economy.macro_government
+  - id: subsidies
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: extra profit of subsidised routes
+    equation: E-006
+    code: _economy.macro_subsidy_game
+  - id: potential_output
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: one-time calibration, then population, capital and cargo capacity
+    equation: E-027
+    code: _economy.macro_natural_output
+  - id: policy_rate
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: Taylor rule
+    equation: E-032
+    code: _economy.macro_interest_bp
+  - id: inflation
+    unit: rate_bp
+    kind: flow
+    frequency: month
+    source: expectations-augmented Phillips curve
+    equation: Phillips
+    code: _economy.macro_inflation_bp

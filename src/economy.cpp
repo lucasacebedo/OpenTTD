@@ -1123,7 +1123,6 @@ static Money DeliverGoods(int num_pieces, CargoType cargo_type, StationID dest, 
 
 	/* Update company statistics */
 	company->cur_economy.delivered_cargo[cargo_type] += accepted_total;
-	MacroNoteCargoDelivery(accepted_total);
 
 	/* Increase town's counter for town effects */
 	const CargoSpec *cs = CargoSpec::Get(cargo_type);
@@ -1139,8 +1138,9 @@ static Money DeliverGoods(int num_pieces, CargoType cargo_type, StationID dest, 
 	/* Update the cargo monitor. */
 	AddCargoDelivery(cargo_type, company->index, accepted_total - accepted_ind, src, st);
 
-	/* Modify profit if a subsidy is in effect. The extra payment is government spending. */
+	/* The tariff is transport output. Any extra subsidy is a transfer, not government consumption. */
 	const Money profit_before_subsidy = profit;
+	if (accepted_total > 0) MacroNoteCargoDelivery(cargo_type, accepted_total, static_cast<int64_t>(profit_before_subsidy));
 	if (CheckSubsidised(cargo_type, company->index, src, st))  {
 		switch (_settings_game.difficulty.subsidy_multiplier) {
 			case 0:  profit += profit >> 1; break;

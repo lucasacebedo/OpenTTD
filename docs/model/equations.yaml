@@ -1,0 +1,34 @@
+# Equations implemented in this build. The full register is the V1 specification.
+# Integer arithmetic only. Rates are hundredths of a percent.
+
+E-004:
+  text: "GO(transport) = household tariffs + freight tariffs, deflated to 1920 pounds"
+  code: src/economylab/accounts.cpp
+
+E-005:
+  text: "VA(transport) = GO(transport) - infrastructure maintenance"
+  note: "Maintenance is intermediate consumption. It is not investment."
+
+E-006:
+  text: "GDP_production = VA(transport) - route subsidies"
+  note: "Product taxes are not observed yet. Route subsidies are product subsidies."
+
+E-007:
+  text: "GDP_expenditure = consumption + investment + government + X - M"
+  note: "X and M are zero until the external sector. Consumption is passenger and mail tariffs. Investment is construction and new vehicles. Government is the purchase slider."
+
+E-008:
+  text: "discrepancy = GDP_production - GDP_expenditure"
+  note: "Shown on the panel. Never assigned to consumption."
+
+E-027:
+  text: "Y*/Y0 = 1 + 0.30*(K/K0 - 1) + 0.70*(L/L0 - 1) + 0.20*(Logistics/Logistics0 - 1)"
+  note: "Integer permyriad form. Y0, K0, L0 and Logistics0 are fixed on the first month with positive GDP. They are not replaced when Y and Y* diverge."
+
+E-032:
+  text: "i = r* + pi_target + 1.50*(pi - pi_target) + 0.50*gap"
+  note: "r* and pi_target are 2 percent. The exchange-rate term waits for the external sector. The stored rate is clamped to 0..25 percent."
+
+bridge_unemployment:
+  text: "u = 5% - gap/2"
+  note: "Stands in for E-022 until employment is measured. Not a labour-market clearing."

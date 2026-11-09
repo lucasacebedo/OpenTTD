@@ -6074,10 +6074,10 @@ STR_MACRO_ECONOMY_MENU                                          :Política monet
 STR_MACRO_ECONOMY_CAPTION                                       :{WHITE}Política monetaria y fiscal
 STR_MACRO_DISABLED                                              :{BLACK}El modelo IS-LM está desactivado. Actívalo en Ajustes, Contabilidad, IS-LM y curva de Phillips.
 STR_MACRO_NO_EQUILIBRIUM                                        :{BLACK}Estos parámetros no producen un equilibrio. Baja la propensión marginal a consumir o sube una sensibilidad al interés.
-STR_MACRO_OUTPUT                                                :{BLACK}Producto {COMMA} (potencial {COMMA}, brecha {STRING})
+STR_MACRO_OUTPUT                                                :{BLACK}PIB {COMMA} (potencial {COMMA}, brecha {STRING})
 STR_MACRO_RATES                                                 :{BLACK}Interés {STRING}, inflación {STRING}, inflación esperada {STRING}
 STR_MACRO_PRICES                                                :{BLACK}Índice de precios {DECIMAL}, dinero real {COMMA}
-STR_MACRO_DEMAND                                                :{BLACK}Consumo {COMMA}, inversión de las empresas {COMMA}, gasto público {COMMA}, impuestos {COMMA}
+STR_MACRO_DEMAND                                                :{BLACK}Consumo {COMMA}, formación de capital {COMMA}, compras públicas {COMMA}, impuestos {COMMA}
 STR_MACRO_DEFICIT                                               :{BLACK}Saldo presupuestario G - T: {COMMA}. Actividad de la carga: {DECIMAL}%
 STR_MACRO_INSTRUMENTS                                           :{BLACK}Ahora: G {COMMA}, impuesto {NUM}%, impuesto autónomo {COMMA}, dinero {COMMA}
 STR_MACRO_LABOUR                                                :{BLACK}Población {COMMA}, crecimiento {STRING}, desempleo {STRING}
@@ -6108,16 +6108,16 @@ STR_MACRO_S_TOOLTIP                                             :{BLACK}Cambia l
 STR_MACRO_OPEN_DASHBOARD                                        :Panel
 STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Abre el panel macro en tiempo real
 STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Panel macro
-STR_MACRO_EQ_OUTPUT                                             :{BLACK}Producto {COMMA} = consumo {COMMA} + inversión de las empresas {COMMA} + gasto público {COMMA}
+STR_MACRO_EQ_OUTPUT                                             :{BLACK}PIB producción {COMMA}. Consumo {COMMA}, inversión {COMMA}, compras {COMMA}
 STR_MACRO_EQ_GOVERNMENT                                         :{BLACK}Gasto público {COMMA} = compras {COMMA} + subsidios {COMMA} + subsidios de ruta {COMMA}
 STR_MACRO_EQ_CARGO                                              :{BLACK}La capacidad de carga {COMMA} implica un potencial {COMMA}. Potencial de Phillips {COMMA}
 STR_MACRO_EQ_RATES                                              :{BLACK}Interés {STRING}, inflación {STRING}, desempleo {STRING}
 STR_MACRO_EQ_PUBLIC                                             :{BLACK}Deuda pública {COMMA}. Emitida {COMMA}, recomprada {COMMA}, interés {COMMA}
 STR_MACRO_EQ_PRIVATE                                            :{BLACK}Deuda privada {COMMA}, variación {COMMA}, interés {COMMA}, tope de préstamo {NUM}%
-STR_MACRO_LINK_INVESTMENT                                       :{BLACK}El tipo de interés recorta el tope de los préstamos y encarece lo que las empresas pagan por su deuda, así que bajan la construcción y la compra de vehículos. Ese gasto es la inversión.
-STR_MACRO_LINK_DEBT                                             :{BLACK}Un déficit emite bonos y sube la tasa de interés. Un superávit recompra bonos, baja la tasa y sube el precio de la deuda privada.
-STR_MACRO_LINK_CARGO                                            :{BLACK}La capacidad de carga es la base del producto potencial. La población y el capital acumulado la escalan, y los precios devuelven el producto hacia ese nivel.
-STR_MACRO_LINK_SUBSIDY                                          :{BLACK}Los subsidios, incluido el beneficio extra de las rutas subvencionadas, forman parte del gasto público.
+STR_MACRO_LINK_INVESTMENT                                       :{BLACK}La tasa de política es la regla de Taylor. Las empresas pagan esa tasa por sus préstamos, así que el crédito más caro recorta la construcción y la compra de vehículos. El mantenimiento no es inversión.
+STR_MACRO_LINK_DEBT                                             :{BLACK}Un déficit se financia con bonos. La tasa sigue a la inflación y a la brecha de producto. El deslizador del dinero no fija la tasa.
+STR_MACRO_LINK_CARGO                                            :{BLACK}El producto potencial se calibra una vez y luego se mueve con la población, el capital y la capacidad de carga. No se vuelve a igualar al PIB.
+STR_MACRO_LINK_SUBSIDY                                          :{BLACK}El subsidio de una ruta es una transferencia del gobierno a la empresa. No es consumo público ni producto adicional.
 STR_MACRO_SPEED_1                                               :x1
 STR_MACRO_SPEED_10                                              :x10
 STR_MACRO_SPEED_100                                             :x100
@@ -6179,7 +6179,7 @@ STR_ERROR_BRIDGE_TOO_LOW_FOR_SHIP_DEPOT                         :{WHITE}El puent
 STR_ERROR_BRIDGE_TOO_LOW_FOR_OBJECT                             :{WHITE}El puente es {HEIGHT} demasiado bajo para el objeto
 STR_TOOLBAR_ROADTYPE_VELOCITY                                   :{STRING} {YELLOW}({VELOCITY})
 
-STR_MACRO_EQ_SPLIT                                               :{BLACK}Producto {COMMA} = juego {COMMA} + impulso exógeno {COMMA}
+STR_MACRO_EQ_SPLIT                                               :{BLACK}PIB producción {COMMA}. Volumen físico {COMMA}. Discrepancia {COMMA}
 STR_GRAPH_MENU_MACRO_MONEY                                       :Precios y dinero
 STR_GRAPH_MENU_MACRO_ISLM                                        :Diagrama IS-LM
 STR_GRAPH_MENU_MACRO_ASAD                                        :Oferta y demanda agregadas
@@ -6201,13 +6201,13 @@ STR_MACRO_ASAD_LEGEND                                            :{WHITE}Azul de
 STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Variables macro
 STR_MACRO_GRAPH_MONEY_CAPTION                                    :{WHITE}Precios y dinero
 STR_MACRO_GRAPH_MONEY_FOOTER                                     :{TINY_FONT}{BLACK}Azul, índice de precios; rojo, oferta de dinero real; verde, demanda de dinero
-STR_MACRO_VAR_OUTPUT                                             :{BLACK}Producto {COMMA}. Endógena. La suma de las unidades de carga que entregaron las empresas
-STR_MACRO_VAR_GAME                                               :{BLACK}Parte del juego {COMMA}. Endógena. La carga entregada
-STR_MACRO_VAR_EXO                                                :{BLACK}Impulso exógeno {COMMA}. La política mueve la tasa y la inversión. El producto sigue siendo la carga entregada
-STR_MACRO_VAR_C                                                  :{BLACK}Consumo {COMMA}. Endógena. Lo que queda del ingreso que produjo la inversión. Es cero si no hay inversión
-STR_MACRO_VAR_I                                                  :{BLACK}Inversión de las empresas {COMMA}. Endógena. Construcción, vehículos nuevos y gastos operativos de infraestructura. Ese gasto produce el ingreso de las empresas
-STR_MACRO_VAR_G                                                  :{BLACK}Gasto público {COMMA}. Las compras y el subsidio son exógenos. Los pagos de ruta salen del juego
-STR_MACRO_VAR_YSTAR                                              :{BLACK}Potencial {COMMA}. Endógena. Capacidad de carga, población y capital de las empresas
+STR_MACRO_VAR_OUTPUT                                             :{BLACK}PIB {COMMA}. Endógena. Valor agregado del transporte, en libras de 1920, menos los subsidios de ruta
+STR_MACRO_VAR_GAME                                               :{BLACK}Volumen físico {COMMA}. Unidades de carga entregadas. No es el PIB, porque las unidades son bienes distintos
+STR_MACRO_VAR_EXO                                                :{BLACK}Discrepancia {COMMA}. PIB por producción menos PIB por gasto. No se esconde dentro del consumo
+STR_MACRO_VAR_C                                                  :{BLACK}Consumo {COMMA}. Endógena. Tarifas de pasajeros y correo, en libras de 1920
+STR_MACRO_VAR_I                                                  :{BLACK}Inversión {COMMA}. Endógena. Solo construcción y vehículos nuevos. El mantenimiento es un consumo intermedio
+STR_MACRO_VAR_G                                                  :{BLACK}Compras públicas {COMMA}. Exógenas. El deslizador de compras, a 1.000 libras de 1920 por punto
+STR_MACRO_VAR_YSTAR                                              :{BLACK}Potencial {COMMA}. Endógena. Se calibra una vez; después lo mueven la población, el capital y la capacidad de carga
 STR_MACRO_VAR_P                                                  :{BLACK}Índice de precios {COMMA}. Endógena. Lo mueve la curva de Phillips
 STR_MACRO_VAR_M                                                  :{BLACK}Dinero nominal {COMMA}. Exógena. Se cambia en la ventana de política
 STR_MACRO_VAR_RM                                                 :{BLACK}Oferta de dinero real {COMMA}. Endógena. Dinero nominal dividido por el índice de precios

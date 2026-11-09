@@ -1466,10 +1466,10 @@ STR_MACRO_ECONOMY_MENU                                          :Monetary and fi
 STR_MACRO_ECONOMY_CAPTION                                       :{WHITE}Monetary and fiscal policy
 STR_MACRO_DISABLED                                              :{BLACK}The IS-LM model is off. Enable it under Settings, Accounting, IS-LM and Phillips curve.
 STR_MACRO_NO_EQUILIBRIUM                                        :{BLACK}These parameters do not produce an equilibrium. Lower the marginal propensity to consume or raise an interest sensitivity.
-STR_MACRO_OUTPUT                                                :{BLACK}Output {COMMA} (potential {COMMA}, gap {RAW_STRING})
+STR_MACRO_OUTPUT                                                :{BLACK}GDP {COMMA} (potential {COMMA}, gap {RAW_STRING})
 STR_MACRO_RATES                                                 :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, expected inflation {RAW_STRING}
 STR_MACRO_PRICES                                                :{BLACK}Price index {DECIMAL}, real money {COMMA}
-STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, company investment {COMMA}, government {COMMA}, taxes {COMMA}
+STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, capital formation {COMMA}, government purchases {COMMA}, taxes {COMMA}
 STR_MACRO_DEFICIT                                               :{BLACK}Budget balance G - T: {COMMA}. Cargo activity: {DECIMAL}%
 STR_MACRO_INSTRUMENTS                                           :{BLACK}Now: G {COMMA}, tax {NUM}%, autonomous tax {COMMA}, money {COMMA}
 STR_MACRO_LABOUR                                               :{BLACK}Population {COMMA}, growth {RAW_STRING}, unemployment {RAW_STRING}
@@ -1500,16 +1500,16 @@ STR_MACRO_S_TOOLTIP                                             :{BLACK}Change s
 STR_MACRO_OPEN_DASHBOARD                                        :Dashboard
 STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Open the live macro dashboard
 STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Macro dashboard
-STR_MACRO_EQ_OUTPUT                                             :{BLACK}Output {COMMA} = consumption {COMMA} + company investment {COMMA} + government {COMMA}
+STR_MACRO_EQ_OUTPUT                                             :{BLACK}GDP production {COMMA}. Consumption {COMMA}, investment {COMMA}, purchases {COMMA}
 STR_MACRO_EQ_GOVERNMENT                                         :{BLACK}Government {COMMA} = purchases {COMMA} + subsidies {COMMA} + route subsidies {COMMA}
 STR_MACRO_EQ_CARGO                                              :{BLACK}Cargo capacity {COMMA} implies potential {COMMA}. Phillips potential {COMMA}
 STR_MACRO_EQ_RATES                                              :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, unemployment {RAW_STRING}
 STR_MACRO_EQ_PUBLIC                                             :{BLACK}Public debt {COMMA}. Issued {COMMA}, bought back {COMMA}, interest {COMMA}
 STR_MACRO_EQ_PRIVATE                                            :{BLACK}Private debt {COMMA}, change {COMMA}, interest {COMMA}, loan ceiling {NUM}%
-STR_MACRO_LINK_INVESTMENT                                       :{BLACK}The interest rate cuts the loan ceiling and raises what companies pay on their debt, so construction and vehicle purchases fall. That spending is investment.
-STR_MACRO_LINK_DEBT                                             :{BLACK}A deficit issues bonds and raises the interest rate. A surplus buys bonds back, lowers the interest rate and raises the price of private debt.
-STR_MACRO_LINK_CARGO                                            :{BLACK}Cargo capacity is the base of potential output. Population and accumulated capital scale it, and prices pull output back toward it.
-STR_MACRO_LINK_SUBSIDY                                          :{BLACK}Subsidies, including the extra profit of subsidised routes, are part of government spending.
+STR_MACRO_LINK_INVESTMENT                                       :{BLACK}The policy rate is the Taylor rule. Companies pay that rate on loans, so dearer credit trims construction and vehicle purchases. Maintenance is not investment.
+STR_MACRO_LINK_DEBT                                             :{BLACK}A deficit is financed with bonds. The rate itself follows inflation and the output gap. The money slider does not set the rate.
+STR_MACRO_LINK_CARGO                                            :{BLACK}Potential output is calibrated once, then moves with population, capital and cargo capacity. It is not reset to GDP.
+STR_MACRO_LINK_SUBSIDY                                          :{BLACK}A route subsidy is a transfer from the government to the company. It is not government consumption and it is not extra GDP.
 STR_MACRO_SPEED_1                                               :x1
 STR_MACRO_SPEED_10                                              :x10
 STR_MACRO_SPEED_100                                             :x100
@@ -1522,7 +1522,7 @@ STR_MACRO_GRAPH_FLOW_CAPTION                                    :{WHITE}Inflatio
 STR_MACRO_GRAPH_FLOW_FOOTER                                     :{TINY_FONT}{BLACK}Blue inflation (hundredths of a percent), red public-debt change, green private-debt change
 STR_MACRO_GRAPH_ACTIVITY_CAPTION                                :{WHITE}Output and government
 STR_MACRO_GRAPH_ACTIVITY_FOOTER                                 :{TINY_FONT}{BLACK}Blue output (the same output as the dashboard), red potential, green investment, orange government, purple subsidies
-STR_MACRO_EQ_SPLIT                                               :{BLACK}Output {COMMA} = game {COMMA} + exogenous impulse {COMMA}
+STR_MACRO_EQ_SPLIT                                               :{BLACK}GDP production {COMMA}. Physical volume {COMMA}. Discrepancy {COMMA}
 STR_GRAPH_MENU_MACRO_MONEY                                       :Prices and money
 STR_GRAPH_MENU_MACRO_ISLM                                        :IS-LM diagram
 STR_GRAPH_MENU_MACRO_ASAD                                        :Aggregate supply and demand
@@ -1544,13 +1544,13 @@ STR_MACRO_ASAD_LEGEND                                            :{WHITE}Blue de
 STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Macro variables
 STR_MACRO_GRAPH_MONEY_CAPTION                                    :{WHITE}Prices and money
 STR_MACRO_GRAPH_MONEY_FOOTER                                     :{TINY_FONT}{BLACK}Blue price index, red real money supply, green money demand
-STR_MACRO_VAR_OUTPUT                                             :{BLACK}Output {COMMA}. Endogenous. The sum of cargo units the companies delivered
-STR_MACRO_VAR_GAME                                               :{BLACK}Game part {COMMA}. Endogenous. The delivered cargo itself
-STR_MACRO_VAR_EXO                                                :{BLACK}Exogenous impulse {COMMA}. Policy moves the interest rate and investment. The product stays the delivered cargo
-STR_MACRO_VAR_C                                                  :{BLACK}Consumption {COMMA}. Endogenous. What remains of the income investment produced. Zero when investment is zero
-STR_MACRO_VAR_I                                                  :{BLACK}Company investment {COMMA}. Endogenous. Construction, new vehicles and infrastructure operating costs. This spending produces company income
-STR_MACRO_VAR_G                                                  :{BLACK}Government {COMMA}. Purchases and the subsidy setting are exogenous. Route payments come from the game
-STR_MACRO_VAR_YSTAR                                              :{BLACK}Potential {COMMA}. Endogenous. Cargo capacity, population and company capital
+STR_MACRO_VAR_OUTPUT                                             :{BLACK}GDP {COMMA}. Endogenous. Transport value added, in 1920 pounds, minus route subsidies
+STR_MACRO_VAR_GAME                                               :{BLACK}Physical volume {COMMA}. Delivered cargo pieces. Not GDP, because the pieces are different goods
+STR_MACRO_VAR_EXO                                                :{BLACK}Discrepancy {COMMA}. GDP by production minus GDP by expenditure. It is not hidden inside consumption
+STR_MACRO_VAR_C                                                  :{BLACK}Consumption {COMMA}. Endogenous. Passenger and mail tariffs, in 1920 pounds
+STR_MACRO_VAR_I                                                  :{BLACK}Investment {COMMA}. Endogenous. Construction and new vehicles only. Maintenance is an intermediate cost
+STR_MACRO_VAR_G                                                  :{BLACK}Government purchases {COMMA}. Exogenous. The purchase slider, converted at 1,000 base-year pounds per point
+STR_MACRO_VAR_YSTAR                                              :{BLACK}Potential {COMMA}. Endogenous. Calibrated once, then population, capital and cargo capacity move it
 STR_MACRO_VAR_P                                                  :{BLACK}Price index {COMMA}. Endogenous. The Phillips curve moves it
 STR_MACRO_VAR_M                                                  :{BLACK}Nominal money {COMMA}. Exogenous. Change it from the policy window
 STR_MACRO_VAR_RM                                                 :{BLACK}Real money supply {COMMA}. Endogenous. Nominal money divided by the price index

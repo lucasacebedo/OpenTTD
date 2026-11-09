@@ -5,10 +5,12 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <https://www.gnu.org/licenses/old-licenses/gpl-2.0>.
  */
 
-/** @file macro_economy.h Closed-economy IS-LM equilibrium and expectations-augmented Phillips curve. */
+/** @file macro_economy.h Monthly national accounts, Taylor rule and Phillips curve. */
 
 #ifndef MACRO_ECONOMY_H
 #define MACRO_ECONOMY_H
+
+#include "cargo_type.h"
 
 static constexpr int MACRO_HISTORY_MONTHS = 24;
 static constexpr int MACRO_HIST_SERIES = 8;
@@ -37,8 +39,8 @@ void MacroEconomyObserve();
 /** Extra profit paid because a delivery was subsidised, in pounds. */
 void MacroNoteSubsidyPayment(int64_t pounds);
 
-/** Cargo units a company has just delivered. Their sum is the product. */
-void MacroNoteCargoDelivery(int64_t units);
+/** One accepted delivery. The tariff is the payment before any route subsidy. Pieces are not GDP. */
+void MacroNoteCargoDelivery(CargoType cargo, int64_t units, int64_t tariff_pounds);
 
 /** Short name of one macro graph series. Series 0 to 15. */
 const char *MacroSeriesName(int series);

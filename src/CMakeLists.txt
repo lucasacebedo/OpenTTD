@@ -266,6 +266,9 @@ add_files(
     macro_economy.cpp
     macro_economy.h
     macro_economy_gui.cpp
+    economylab/accounts.cpp
+    economylab/accounts.h
+    economylab/units.hpp
     main_gui.cpp
     map.cpp
     map_func.h

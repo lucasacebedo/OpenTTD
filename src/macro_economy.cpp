@@ -5,11 +5,12 @@
  * See the GNU General Public License for more details. You should have received a copy of the GNU General Public License along with OpenTTD. If not, see <https://www.gnu.org/licenses/old-licenses/gpl-2.0>.
  */
 
-/** @file macro_economy.cpp Closed-economy IS-LM equilibrium and expectations-augmented Phillips curve. */
+/** @file macro_economy.cpp Monthly accounts, Taylor rule and expectations-augmented Phillips curve. */
 
 #include "stdafx.h"
 
 #include "macro_economy.h"
+#include "economylab/accounts.h"
 #include "company_base.h"
 #include "economy_func.h"
 #include "rail.h"
@@ -31,51 +32,26 @@
 
 /*
  * Closed economy, fixed-point and deterministic (no floating point).
+ * The identities live in economylab/accounts.cpp and docs/model/equations.yaml.
  *
- * Short run, Keynesian and Patinkin. Prices are given for the month, so output
- * is whatever demand the goods and money markets will support:
- *   Y = C + I + G
- *   T = T0 + t Y
- *   C = C0 + c (Y - T) + real-balance gap + lagged inflation + debt interest received
- *   I = I0 + company investment - b r
- *   M / P = k Y - h r
- * Company investment is what companies spent this month on construction and new
- * vehicles, converted from pounds into output points. Real balances M/P enter
- * consumption, so a higher price level makes households poorer and they spend
- * less. Inflation that has already happened makes them spend sooner. The
- * interest rate still cuts investment, and the loan rate charged in the game
- * is this same rate, so dearer credit means less building next month.
+ * GDP is transport value added at 1920 pounds, minus route subsidies.
+ * It is not a sum of cargo pieces. Passenger and mail tariffs are consumption.
+ * Other tariffs are intermediate purchases. Construction and new vehicles are
+ * investment. Maintenance is intermediate consumption. Government purchases are
+ * the purchase slider converted at POLICY_POINT_TO_REAL_POUNDS. The gap between
+ * production and expenditure is stored and shown; it is not written into consumption.
  *
- * Long run, neoclassical. Potential output Y* is not a fixed setting. It starts
- * at the baseline and each month crawls toward
- *   baseline * population / population0 * cargo capacity / capacity0 * capital factor.
- * Population is the towns. Cargo capacity is the vehicles. The capital factor
- * grows with cumulated company investment and shrinks with depreciation.
- * The Phillips curve, pi = pi_e + alpha (Y - Y*) / Y*, then moves prices until
- * the output gap closes on that growing potential. Unemployment is Okun's
- * reading of the same gap, and the gap scales town and industry production.
+ * The policy rate is the Taylor rule E-032. The loan rate charged to companies
+ * is the non-negative policy rate. Potential output follows the integer form of
+ * E-027 and is calibrated once. It is not copied from GDP when the two differ.
  */
 
 static constexpr int64_t MACRO_PRICE_SCALE = 100; ///< Stored price index is the displayed index times this.
 static constexpr int64_t MACRO_MIN_PRICE = 100 * MACRO_PRICE_SCALE;
 static constexpr int64_t MACRO_MAX_PRICE = 200000 * MACRO_PRICE_SCALE;
-static constexpr int64_t MACRO_MIN_LEAKAGE = 100; ///< s * 10000, at least one percent of income leaks out of the goods market.
-static constexpr int64_t MACRO_POUNDS_PER_POINT = 50000; ///< 1920 pounds of company spending that count as one output point.
-static constexpr int64_t MACRO_REAL_BALANCE_EFFECT = 25; ///< Consumption points added per 100 points of extra real money.
-static constexpr int64_t MACRO_MAX_SHIFT = 5000;
-static constexpr int64_t MACRO_CAPITAL_PRODUCTIVITY = 2; ///< Permyriad of potential output added by one point of capital.
+static constexpr int64_t MACRO_POUNDS_PER_POINT = 50000; ///< 1920 pounds of company loans that count as one point of the private-debt stock.
 static constexpr int64_t MACRO_CAPITAL_DEPRECIATION = 600; ///< Months to depreciate one part in this many of the capital stock, about 2 percent a year.
-static constexpr int64_t MACRO_NATURAL_ADJUSTMENT = 24; ///< Months over which potential output closes on its target.
 static constexpr int64_t MACRO_OKUN_NATURAL_BP = 500; ///< Unemployment at a zero output gap, 5 percent.
-
-/** Demand terms known before this month's equilibrium is solved. */
-struct PredeterminedDemand {
-	int64_t cargo = 0; ///< Delivered cargo units. This is the product.
-	int64_t revenue_pounds = 0; ///< Company income. It is what the investment produced.
-	int64_t invest_pounds = 0; ///< Construction, new vehicles and infrastructure operating costs.
-	int64_t government = 0; ///< Policy spending in its own points, scaled to cargo inside the solve.
-	int32_t natural_output = 0;
-};
 
 struct IsLmResult {
 	bool ok = false;
@@ -107,92 +83,58 @@ static int32_t RoundHundredthsToPercent(int32_t hundredths)
 	return -((-hundredths + 50) / 100);
 }
 
-/**
- * Solve the IS-LM crossing at the current macro price index.
- * The price index and the game's spending are given, so this is the short-run
- * sticky-price equilibrium. Company investment and the consumption shifts are
- * folded into autonomous demand, which keeps the closed form.
- */
-static IsLmResult SolveIsLm(int32_t price_index, const PredeterminedDemand &demand)
+static int32_t PhillipsInflation(int32_t expected_bp, int32_t output_gap_bp);
+
+/** Neutral nominal rate in the Taylor rule, before the output gap. r* and the inflation target are 2 percent. */
+static int64_t TaylorNeutralBp(int32_t inflation_bp)
+{
+	constexpr int64_t r_star_bp = 200;
+	constexpr int64_t pi_target_bp = 200;
+	constexpr int64_t phi_pi = 150; ///< 1.50 points of the rate per point of inflation above target.
+	return r_star_bp + pi_target_bp + phi_pi * (static_cast<int64_t>(inflation_bp) - pi_target_bp) / 100;
+}
+
+/** E-032 without the exchange-rate term. The safety band is 0 to 25 percent, not −50 to +100. */
+static int32_t TaylorRateBp(int32_t inflation_bp, int32_t gap_bp)
+{
+	constexpr int64_t phi_y = 50; ///< 0.50 points of the rate per point of output gap.
+	const int64_t rate = TaylorNeutralBp(inflation_bp) + phi_y * gap_bp / 100;
+	return ClampI32(rate, 0, 2500);
+}
+
+/** Publish one monthly close. Consumption is measured; the discrepancy is kept apart. */
+static IsLmResult PublishAccounts(const EconomyLabAccounts &accounts, int32_t price_index)
 {
 	const EconomySettings &cfg = _settings_game.economy;
 	IsLmResult result;
+	constexpr int64_t kShown = 2000000000;
 
-	const int64_t tax_rate = cfg.islm_tax_rate_percent;
-	const int64_t mpc = cfg.islm_mpc_percent;
-	const int64_t leakage = 10000 - mpc * (100 - tax_rate);
-	const int64_t money_interest = cfg.islm_money_interest_sensitivity;
-	const int64_t money_income = cfg.islm_money_income_percent;
-	const int64_t natural_output = std::max<int32_t>(demand.natural_output > 0 ? demand.natural_output : cfg.islm_natural_output, 1);
-	if (leakage < MACRO_MIN_LEAKAGE || money_interest < 1 || money_income < 1) return result;
+	const int64_t output = accounts.gdp_production;
+	const int64_t potential = accounts.potential;
+	int32_t gap_bp = 0;
+	if (potential > 0) gap_bp = ClampI32((output - potential) * 10000 / potential, -10000, 10000);
 
-	/* Displayed index 1000 is stored as 100000, so real balances are M * 1000 / displayed index. */
+	const int32_t inflation_bp = PhillipsInflation(_economy.macro_expected_inflation_bp, gap_bp);
+	const int32_t interest_bp = TaylorRateBp(inflation_bp, gap_bp);
+	const int64_t yield_bp = std::max<int32_t>(interest_bp, 1);
 	const int64_t price = std::clamp<int64_t>(price_index, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
 	const int64_t real_money = static_cast<int64_t>(cfg.islm_money_supply) * 1000 * MACRO_PRICE_SCALE / price;
 
-	/* The product is the cargo the companies delivered. Nothing else invents it. */
-	int64_t output = demand.cargo;
-	if (output < 1 && _economy.macro_output > 0) output = _economy.macro_output;
-	/* A potential still expressed in the old index is brought onto the cargo the network actually delivers. */
-	if (output >= 100 && (natural_output > output * 4 || output > natural_output * 4)) {
-		_economy.macro_natural_output = ClampI32(output, 100, 10000000);
-	}
-	const int64_t potential = std::max<int32_t>(_economy.macro_natural_output > 0 ? _economy.macro_natural_output : static_cast<int32_t>(natural_output), 1);
-
-	/* 1000 policy points are one whole product, so a setting of 180 stays about 18 percent of the cargo. */
-	int64_t government = output > 0 ? demand.government * output / 1000 : 0;
-	if (government < 0) government = 0;
-
-	/* Investment produces the companies' income. Its size is that spending relative to the income it produced. */
-	int64_t investment = 0;
-	if (output > 0 && demand.invest_pounds > 0) {
-		if (demand.revenue_pounds > 0) {
-			investment = output * demand.invest_pounds / (demand.revenue_pounds + demand.invest_pounds);
-		} else {
-			investment = std::max<int64_t>(output / 5, 1);
-		}
-		if (investment > output * 45 / 100) investment = output * 45 / 100;
-		if (investment < 1) investment = 1;
-	}
-
-	/* Money demand at a zero rate is k/10 percent of output. k = 50 means 5 percent, the same order as real balances. */
-	auto interest_at = [&](int64_t level) {
-		if (level < 1) level = 1;
-		const int64_t demand_pm = money_income * 10;
-		const int64_t supply_pm = real_money * 10000 / level;
-		return (demand_pm - supply_pm) * 100 / money_interest;
-	};
-	const int64_t tax_revenue = static_cast<int64_t>(cfg.islm_autonomous_tax) * output / 1000 + tax_rate * output / 100;
-	/* A surplus lends to the companies: the interest rate falls and the price of their debt rises. */
-	const int64_t surplus = tax_revenue - government;
-	int64_t interest_bp = output > 0 ? interest_at(output) - surplus * 5000 / output : interest_at(potential);
-	if (investment > 0) {
-		const int64_t rate_percent = std::max<int64_t>(interest_bp, 0) / 100;
-		const int64_t kept = investment * 1000 / (1000 + cfg.islm_investment_sensitivity * rate_percent);
-		investment = std::max<int64_t>(kept, 1);
-	}
-	if (output > 0 && investment > output) investment = output;
-	if (output > 0 && government > output - investment) government = output - investment;
-	/* No investment, no income, no consumption. Otherwise consumption is what the identity leaves. */
-	const int64_t consumption = investment > 0 ? output - investment - government : 0;
-	const int64_t yield_bp = std::max<int64_t>(interest_bp, 50);
-	const int64_t debt_price = 500 * 1000 / yield_bp;
-
-	result.ok = output > 0;
-	result.leakage = static_cast<int32_t>(leakage);
-	result.output = ClampI32(output, 0, 10000000);
-	result.interest_bp = ClampI32(interest_bp, -5000, 10000);
-	result.consumption = ClampI32(consumption, 0, 10000000);
-	result.investment = ClampI32(investment, 0, 10000000);
-	result.tax_revenue = ClampI32(tax_revenue, 0, 10000000);
-	result.real_money = ClampI32(real_money, 0, 10000000);
-	result.money_demand = ClampI32(money_income * output / 1000, 0, 10000000);
-	result.game_output = result.output;
-	result.exogenous_output = 0;
-	result.debt_price = ClampI32(debt_price, 1, 10000000);
-	result.output_gap_bp = ClampI32((output - potential) * 10000 / potential, -10000, 100000);
-	/* Okun: a one-point boom cuts unemployment by half a point. */
-	result.unemployment_bp = ClampI32(MACRO_OKUN_NATURAL_BP - result.output_gap_bp / 2, 0, 5000);
+	result.ok = accounts.ledger_balanced;
+	result.output = ClampI32(output, -kShown, kShown);
+	result.interest_bp = interest_bp;
+	result.consumption = ClampI32(accounts.consumption, 0, kShown);
+	result.investment = ClampI32(accounts.investment, 0, kShown);
+	result.tax_revenue = ClampI32(accounts.tax_revenue, 0, kShown);
+	result.real_money = ClampI32(real_money, 0, kShown);
+	result.money_demand = 0;
+	result.game_output = ClampI32(accounts.logistics_pieces, 0, kShown);
+	result.exogenous_output = ClampI32(accounts.discrepancy, -kShown, kShown);
+	result.debt_price = ClampI32(500 * 1000 / yield_bp, 1, kShown);
+	result.output_gap_bp = gap_bp;
+	/* Bridge until the labour module. A one-point boom cuts unemployment by half a point. */
+	result.unemployment_bp = ClampI32(MACRO_OKUN_NATURAL_BP - gap_bp / 2, 0, 5000);
+	result.leakage = 0;
 	return result;
 }
 
@@ -298,19 +240,6 @@ static int64_t CompanyCapitalSpending()
 	return spent;
 }
 
-/** Company income this economy year. Revenue is stored as a negative cost. */
-static int64_t CompanyRevenueBook()
-{
-	int64_t earned = 0;
-	for (const Company *company : Company::Iterate()) {
-		earned -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::TrainRevenue]);
-		earned -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::RoadVehRevenue]);
-		earned -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::AircraftRevenue]);
-		earned -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::ShipRevenue]);
-	}
-	return earned;
-}
-
 /** What it costs to keep the rails, roads, signals, canals, stations and airports the companies already own. */
 static int64_t InfrastructureOperatingCost()
 {
@@ -337,49 +266,21 @@ static int64_t InfrastructureOperatingCost()
 	return std::max<int64_t>(total, 0);
 }
 
-static int64_t cargo_delivered_open = 0;
-static int64_t cargo_delivered_closed = 0;
-
-void MacroNoteCargoDelivery(int64_t units)
+void MacroNoteCargoDelivery(CargoType cargo, int64_t units, int64_t tariff_pounds)
 {
-	if (units > 0) cargo_delivered_open += units;
-}
-
-/** Cargo already delivered this quarter, used until the first month of the new build has its own count. */
-static int64_t SeedDeliveredCargo()
-{
-	int64_t total = 0;
-	for (const Company *company : Company::Iterate()) {
-		total += static_cast<int64_t>(company->cur_economy.delivered_cargo.GetSum<uint64_t>());
-	}
-	const int months = static_cast<int>(TimerGameEconomy::month) % 3 + 1;
-	return std::max<int64_t>(total / months, total > 0 ? 1 : 0);
-}
-
-static int64_t DeliveredCargo(bool close_month)
-{
-	if (close_month) {
-		if (cargo_delivered_open > 0) cargo_delivered_closed = cargo_delivered_open;
-		cargo_delivered_open = 0;
-		if (cargo_delivered_closed > 0) return cargo_delivered_closed;
-		return SeedDeliveredCargo();
-	}
-	const int64_t base = cargo_delivered_closed > 0 ? cargo_delivered_closed : SeedDeliveredCargo();
-	return std::max(cargo_delivered_open, base);
+	if (!_settings_game.economy.islm_enabled || _game_mode == GameMode::Menu) return;
+	EconomyLabNoteDelivery(cargo, units, tariff_pounds);
 }
 
 struct GameFlows {
-	int64_t cargo = 0;
-	int64_t revenue = 0;
-	int64_t invest = 0;
+	int64_t capex = 0;
+	int64_t opex = 0;
 };
 
-/** Cargo delivered, the income it produced, and the spending that produced it. */
+/** Construction and new vehicles are investment. Maintenance is intermediate consumption. */
 static GameFlows MeasureGameFlows(bool close_month)
 {
 	GameFlows flows;
-	flows.cargo = DeliveredCargo(close_month);
-
 	const int64_t capex = CompanyCapitalSpending();
 	int64_t capex_flow = capex - _economy.macro_company_spent_year;
 	if (capex_flow < 0) {
@@ -393,14 +294,8 @@ static GameFlows MeasureGameFlows(bool close_month)
 	}
 	if (close_month) _economy.macro_company_spent_year = capex;
 
-	static int64_t revenue_mark = 0;
-	const int64_t revenue = CompanyRevenueBook();
-	int64_t revenue_flow = revenue - revenue_mark;
-	if (revenue_flow < 0) revenue_flow = std::max<int64_t>(revenue, 0);
-	if (close_month) revenue_mark = revenue;
-
-	flows.revenue = std::max<int64_t>(revenue_flow, 0);
-	flows.invest = std::max<int64_t>(capex_flow, 0) + InfrastructureOperatingCost();
+	flows.capex = std::max<int64_t>(capex_flow, 0);
+	flows.opex = InfrastructureOperatingCost();
 	return flows;
 }
 
@@ -413,8 +308,6 @@ void MacroEconomyObserve()
 
 	_economy.macro_population = TownPopulation();
 	_economy.macro_cargo_capacity = InstalledCargoCapacity();
-	if (_economy.macro_population_base <= 0 && _economy.macro_population > 0) _economy.macro_population_base = _economy.macro_population;
-	UpdateCargoPotential();
 }
 
 /**
@@ -440,18 +333,6 @@ static void AdvanceAggregateSupply()
 	if (_economy.macro_capital < 0) _economy.macro_capital = 0;
 
 	UpdateCargoPotential();
-	const int64_t baseline = std::max<int64_t>(_economy.macro_cargo_potential, 1);
-	const int64_t population_factor = _economy.macro_population_base > 0 ? std::clamp<int64_t>(population * 10000 / _economy.macro_population_base, 2500, 40000) : 10000;
-	const int64_t capital_factor = std::clamp<int64_t>(10000 + _economy.macro_capital * MACRO_CAPITAL_PRODUCTIVITY, 10000, 40000);
-	int64_t target = baseline * population_factor / 10000;
-	target = target * capital_factor / 10000;
-	target = std::clamp<int64_t>(target, 100, 10000000);
-
-	int64_t natural = _economy.macro_natural_output > 0 ? _economy.macro_natural_output : baseline;
-	const int64_t gap = target - natural;
-	natural += gap / MACRO_NATURAL_ADJUSTMENT;
-	if (gap != 0 && gap / MACRO_NATURAL_ADJUSTMENT == 0) natural += gap > 0 ? 1 : -1;
-	_economy.macro_natural_output = ClampI32(natural, 100, 10000000);
 }
 
 static constexpr int MACRO_BOND_SLOTS = 48;
@@ -481,22 +362,11 @@ static void UpdateCargoPotential()
 	_economy.macro_cargo_potential = ClampI32(std::clamp<int64_t>(potential, 100, 10000000), 100, 10000000);
 }
 
-static int64_t EffectiveGovernment()
-{
-	return static_cast<int64_t>(_settings_game.economy.islm_government_spending) + _settings_game.economy.islm_subsidies + _economy.macro_subsidy_game;
-}
-
 void MacroNoteSubsidyPayment(int64_t pounds)
 {
 	if (pounds <= 0 || !_settings_game.economy.islm_enabled || _game_mode == GameMode::Menu) return;
 	_economy.macro_subsidy_pounds += pounds;
-}
-
-/** Turn this month's route-subsidy payments into output points and start a new month. */
-static void CloseSubsidyMonth()
-{
-	_economy.macro_subsidy_game = static_cast<int32_t>(PoundsToPoints(_economy.macro_subsidy_pounds, MACRO_MAX_SHIFT));
-	_economy.macro_subsidy_pounds = 0;
+	EconomyLabNoteSubsidy(pounds);
 }
 
 static void MeasurePrivateDebt()
@@ -654,33 +524,37 @@ static void RecalculateMacroEconomy(bool advance_prices)
 		_economy.macro_price_index = ClampI32(initial * MACRO_PRICE_SCALE, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
 		_economy.macro_expected_inflation_bp = _settings_game.economy.islm_initial_expected_inflation * 100;
 	}
-	if (_economy.macro_natural_output <= 0) {
-		_economy.macro_natural_output = std::max<int32_t>(_settings_game.economy.islm_natural_output, 1);
-	}
 	if (advance_prices) {
-		CloseSubsidyMonth();
 		AdvanceAggregateSupply();
 		MeasurePrivateDebt();
 	}
 	const GameFlows flows = _generating_world ? GameFlows{} : MeasureGameFlows(advance_prices);
-	_economy.macro_government = ClampI32(EffectiveGovernment(), 0, 10000000);
+	EconomyLabFlows lab_flows;
+	lab_flows.capex_pounds = flows.capex;
+	lab_flows.opex_pounds = flows.opex;
+	lab_flows.government_points = _settings_game.economy.islm_government_spending;
+	lab_flows.tax_rate_percent = _settings_game.economy.islm_tax_rate_percent;
+	lab_flows.autonomous_tax_points = _settings_game.economy.islm_autonomous_tax;
+	lab_flows.population = _economy.macro_population;
+	lab_flows.capacity = _economy.macro_cargo_capacity;
+	lab_flows.capital_stock = _economy.macro_capital;
+	lab_flows.payment_index = static_cast<int64_t>(std::max<uint64_t>(_economy.inflation_payment, static_cast<uint64_t>(PAYMENT_INDEX_BASE)));
 
-	PredeterminedDemand demand;
-	demand.cargo = flows.cargo;
-	demand.revenue_pounds = flows.revenue;
-	demand.invest_pounds = flows.invest;
-	demand.government = _economy.macro_government;
-	demand.natural_output = _economy.macro_natural_output;
+	const EconomyLabAccounts accounts = EconomyLabCloseMonth(lab_flows, advance_prices);
+	if (advance_prices) _economy.macro_subsidy_pounds = 0;
+	if (accounts.reset_legacy_capital) _economy.macro_capital = 0;
 
 	const int64_t debt_before = _economy.macro_debt;
-	const IsLmResult result = SolveIsLm(_economy.macro_price_index, demand);
+	const IsLmResult result = PublishAccounts(accounts, _economy.macro_price_index);
 	const int32_t inflation_bp = result.ok ? PhillipsInflation(_economy.macro_expected_inflation_bp, result.output_gap_bp) : _economy.macro_inflation_bp;
 	StoreEquilibrium(result, inflation_bp);
 	if (result.ok) {
 		_economy.macro_company_investment = result.investment;
-		_economy.macro_government = result.output - result.consumption - result.investment;
+		_economy.macro_government = ClampI32(accounts.government, 0, 2000000000);
+		_economy.macro_natural_output = ClampI32(accounts.potential, 0, 2000000000);
+		_economy.macro_subsidy_game = ClampI32(accounts.subsidies, 0, 2000000000);
 		if (advance_prices) {
-			_economy.macro_capital = std::min<int64_t>(_economy.macro_capital + result.investment, 1000000);
+			_economy.macro_capital = std::min<int64_t>(_economy.macro_capital + accounts.investment, 1000000000000);
 		}
 	}
 	if (result.ok && advance_prices) {
@@ -743,6 +617,7 @@ static void ClearMacroState()
 
 void ResetMacroEconomy()
 {
+	EconomyLabReset();
 	ClearMacroState();
 
 	if (!_settings_game.economy.islm_enabled) return;
@@ -761,12 +636,8 @@ void ResetMacroEconomy()
 
 void RefreshMacroEconomy()
 {
-	if (_game_mode == GameMode::Menu) return;
-	if (!_settings_game.economy.islm_enabled) {
-		PublishMacroState();
-		return;
-	}
-	RecalculateMacroEconomy(false);
+	/* Windows and setting changes may call this. Observation does not resolve the month. */
+	PublishMacroState();
 }
 
 /** Raise one autonomous flow by the annual inflation rate. The result stays inside the setting's range. */
@@ -853,38 +724,24 @@ uint MacroIndustryIncentivePermyriad(int production_level)
 
 int32_t MacroOutputAtInterest(int32_t interest_bp)
 {
-	const int64_t output_now = std::max<int32_t>(_economy.macro_output, 1);
-	/* Ten percentage points of interest move output by about a quarter, so the IS curve is visible. */
-	const int64_t slope = std::max<int64_t>(output_now * std::max<int>(_settings_game.economy.islm_investment_sensitivity, 1) / 80000, 1);
-	const int64_t output = output_now + (static_cast<int64_t>(_economy.macro_interest_bp) - interest_bp) * slope;
-	return ClampI32(output, 0, 10000000);
+	const int64_t potential = std::max<int32_t>(_economy.macro_natural_output, 1);
+	const int64_t neutral = TaylorNeutralBp(_economy.macro_inflation_bp);
+	constexpr int64_t phi_y = 50;
+	const int64_t gap_bp = (static_cast<int64_t>(interest_bp) - neutral) * 100 / phi_y;
+	return ClampI32(potential * (10000 + gap_bp) / 10000, 0, 2000000000);
 }
 
 int32_t MacroInterestAtOutput(int32_t output)
 {
-	const int64_t sensitivity = std::max<int>(_settings_game.economy.islm_money_interest_sensitivity, 1);
-	const int64_t income = _settings_game.economy.islm_money_income_percent;
-	const int64_t level = std::max<int32_t>(output, 1);
-	const int64_t demand_pm = income * 10;
-	const int64_t supply_pm = static_cast<int64_t>(_economy.macro_real_money) * 10000 / level;
-	int64_t interest = (demand_pm - supply_pm) * 100 / sensitivity;
-	const int64_t base = std::max<int32_t>(_economy.macro_output, 1);
-	const int64_t surplus = static_cast<int64_t>(_economy.macro_tax_revenue) - _economy.macro_government;
-	interest -= surplus * 5000 / base;
-	return ClampI32(interest, -5000, 10000);
+	const int64_t potential = std::max<int32_t>(_economy.macro_natural_output, 1);
+	const int32_t gap_bp = ClampI32((static_cast<int64_t>(output) - potential) * 10000 / potential, -10000, 10000);
+	return TaylorRateBp(_economy.macro_inflation_bp, gap_bp);
 }
 
-int32_t MacroOutputAtPrice(int32_t price_index)
+int32_t MacroOutputAtPrice(int32_t)
 {
-	const EconomySettings &cfg = _settings_game.economy;
-	auto balance_at = [&](int64_t price) {
-		price = std::clamp<int64_t>(price, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
-		const int64_t real_money = static_cast<int64_t>(cfg.islm_money_supply) * 1000 * MACRO_PRICE_SCALE / price;
-		return std::clamp<int64_t>((real_money - static_cast<int64_t>(cfg.islm_money_supply)) * MACRO_REAL_BALANCE_EFFECT / 100, -MACRO_MAX_SHIFT, MACRO_MAX_SHIFT);
-	};
-	const int64_t y = std::max<int32_t>(_economy.macro_output, 1);
-	const int64_t output = y + (balance_at(price_index) - balance_at(_economy.macro_price_index)) * y / 20000;
-	return ClampI32(output, 0, 10000000);
+	/* Measured GDP is already realised this month. The price index does not rewrite it. */
+	return _economy.macro_output;
 }
 
 int32_t MacroPriceAtOutput(int32_t output)
@@ -901,11 +758,11 @@ const char *MacroSeriesName(int series)
 		"Inflación",
 		"Cambio de la deuda pública",
 		"Precio de la deuda privada",
-		"Producto (carga entregada)",
+		"PIB (valor agregado)",
 		"Producto potencial",
-		"Inversión",
+		"Inversión (formación de capital)",
 		"Gasto público",
-		"Subsidios",
+		"Subsidios (transferencia)",
 		"Índice de precios",
 		"Dinero real",
 		"Demanda de dinero",
@@ -913,7 +770,7 @@ const char *MacroSeriesName(int series)
 		"Tasa de interés",
 		"Desempleo",
 		"Recaudación",
-		"Impulso exógeno",
+		"Discrepancia del PIB",
 	};
 	if (series < 0 || series >= static_cast<int>(std::size(names))) return "";
 	return names[series];
