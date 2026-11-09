@@ -426,6 +426,9 @@ enum class SaveLoadVersion : uint16_t {
 	DoubleEndedShips, ///< Saveload version: 368, GitHub pull request: 16002\n Double-ended (NewGRF-only) ships can reverse without turning.
 
 	MacroIsLm, ///< Saveload version: 369\n Configurable IS-LM equilibrium and expectations-augmented Phillips curve.
+	MacroDynamics, ///< Saveload version: 370\n Potential output, public debt and company investment feed the IS-LM model.
+	MacroLab, ///< Saveload version: 371\n Bond book, private debt, subsidies and the macro graph history.
+	MacroAccounts, ///< Saveload version: 372\n Output is anchored to the game, with the exogenous impulse and the price history stored apart.
 
 	MaxVersion, ///< Highest possible saveload version.
 };

@@ -494,6 +494,8 @@ STR_GRAPH_MENU_DELIVERED_CARGO_GRAPH                            :Delivered cargo
 STR_GRAPH_MENU_PERFORMANCE_HISTORY_GRAPH                        :Performance history graph
 STR_GRAPH_MENU_COMPANY_VALUE_GRAPH                              :Company value graph
 STR_GRAPH_MENU_CARGO_PAYMENT_RATES                              :Cargo payment rates
+STR_GRAPH_MENU_MACRO_FLOW                                       :Inflation and debt graph
+STR_GRAPH_MENU_MACRO_ACTIVITY                                   :Output and government graph
 
 # Company league menu
 STR_GRAPH_MENU_COMPANY_LEAGUE_TABLE                             :Company league table
@@ -1424,9 +1426,9 @@ STR_CONFIG_SETTING_INFLATION_HELPTEXT                           :Enable inflatio
 
 STR_CONFIG_SETTING_MACRO_PAGE                                   :IS-LM and Phillips curve
 STR_CONFIG_SETTING_ISLM_ENABLED                                 :IS-LM and Phillips curve: {STRING2}
-STR_CONFIG_SETTING_ISLM_ENABLED_HELPTEXT                        :Drive loan interest, price inflation and cargo activity from a closed-economy IS-LM equilibrium and an expectations-augmented Phillips curve. While this is on, it replaces the classic inflation path. Every coefficient below can be changed during a game
+STR_CONFIG_SETTING_ISLM_ENABLED_HELPTEXT                        :Drive loan interest, price inflation and cargo activity from a closed-economy IS-LM equilibrium and an expectations-augmented Phillips curve. In the short run, output follows demand, real balances and the interest rate. In the long run, prices pull output back to a potential level that grows with population, cargo capacity and company investment. While this is on, it replaces the classic inflation path. Every coefficient below can be changed during a game
 STR_CONFIG_SETTING_ISLM_GOVERNMENT                              :Government spending: {STRING2}
-STR_CONFIG_SETTING_ISLM_GOVERNMENT_HELPTEXT                     :Fiscal policy instrument G, in the same index points as output. Raising it shifts the IS curve out
+STR_CONFIG_SETTING_ISLM_GOVERNMENT_HELPTEXT                     :Government purchases, in the same index points as output. Subsidies and the extra profit of subsidised routes are added to this before it enters demand
 STR_CONFIG_SETTING_ISLM_TAX_RATE                                :Marginal tax rate: {STRING2}
 STR_CONFIG_SETTING_ISLM_TAX_RATE_HELPTEXT                       :Fiscal policy instrument t. Tax revenue is autonomous tax plus this percent of output
 STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX                          :Autonomous tax: {STRING2}
@@ -1434,13 +1436,13 @@ STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX_HELPTEXT                 :Fiscal policy i
 STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY                            :Nominal money supply: {STRING2}
 STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY_HELPTEXT                   :Monetary policy instrument M. Real balances are M times 1000, divided by the macro price index. Raising M shifts the LM curve out
 STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT                          :Natural output: {STRING2}
-STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT_HELPTEXT                 :Natural level of output Y*. The Phillips curve adds inflation when equilibrium output is above this
+STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT_HELPTEXT                 :Baseline of potential output. Installed cargo capacity is the proxy: after the first reading, one percent more capacity is one percent more potential. Population and company capital scale that level, and the Phillips curve pulls output toward it
 STR_CONFIG_SETTING_ISLM_CONSUMPTION                             :Autonomous consumption: {STRING2}
 STR_CONFIG_SETTING_ISLM_CONSUMPTION_HELPTEXT                    :Consumption at zero disposable income, C0
 STR_CONFIG_SETTING_ISLM_MPC                                     :Marginal propensity to consume: {STRING2}
 STR_CONFIG_SETTING_ISLM_MPC_HELPTEXT                            :Share of extra disposable income that is consumed. Kept below 100 percent so the goods market has a finite multiplier
 STR_CONFIG_SETTING_ISLM_INVESTMENT                              :Autonomous investment: {STRING2}
-STR_CONFIG_SETTING_ISLM_INVESTMENT_HELPTEXT                     :Investment at a zero interest rate, I0
+STR_CONFIG_SETTING_ISLM_INVESTMENT_HELPTEXT                     :Reference floor. The investment that enters output is what companies spend on construction and new vehicles. The interest rate reaches that spending through the cost and the ceiling of their loans
 STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY                  :Investment interest sensitivity: {STRING2}
 STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY_HELPTEXT         :How many output points investment loses for each percentage point of the interest rate
 STR_CONFIG_SETTING_ISLM_MONEY_INCOME                            :Money demand income sensitivity: {STRING2}
@@ -1458,18 +1460,21 @@ STR_CONFIG_SETTING_ISLM_ADAPTATION_HELPTEXT                     :Percent of an i
 STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION                       :Cargo payment inflation share: {STRING2}
 STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION_HELPTEXT              :Percent of Phillips-curve inflation applied to cargo payments. 100 keeps real payment rates stable. Less than 100 makes costs rise faster than revenue, as in the classic game
 STR_CONFIG_SETTING_ISLM_CARGO_LINK                              :Output gap passed into production: {STRING2}
-STR_CONFIG_SETTING_ISLM_CARGO_LINK_HELPTEXT                     :Percent of the output gap applied to town and industry cargo. 100 makes a 10 percent boom raise production by 10 percent. The effect is limited to between 50 and 200 percent of normal production
+STR_CONFIG_SETTING_ISLM_CARGO_LINK_HELPTEXT                     :Percent of the output gap applied to town and industry cargo. 100 makes a 10 percent boom raise production by 10 percent. The effect is limited to between 50 and 200 percent of normal production. Unemployment is 5 percent minus half of this gap
 
 STR_MACRO_ECONOMY_MENU                                          :Monetary and fiscal policy
 STR_MACRO_ECONOMY_CAPTION                                       :{WHITE}Monetary and fiscal policy
 STR_MACRO_DISABLED                                              :{BLACK}The IS-LM model is off. Enable it under Settings, Accounting, IS-LM and Phillips curve.
 STR_MACRO_NO_EQUILIBRIUM                                        :{BLACK}These parameters do not produce an equilibrium. Lower the marginal propensity to consume or raise an interest sensitivity.
-STR_MACRO_OUTPUT                                                :{BLACK}Output {COMMA} (natural {COMMA}, gap {RAW_STRING})
+STR_MACRO_OUTPUT                                                :{BLACK}Output {COMMA} (potential {COMMA}, gap {RAW_STRING})
 STR_MACRO_RATES                                                 :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, expected inflation {RAW_STRING}
 STR_MACRO_PRICES                                                :{BLACK}Price index {DECIMAL}, real money {COMMA}
-STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, investment {COMMA}, government {COMMA}, taxes {COMMA}
+STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, company investment {COMMA}, government {COMMA}, taxes {COMMA}
 STR_MACRO_DEFICIT                                               :{BLACK}Budget balance G - T: {COMMA}. Cargo activity: {DECIMAL}%
 STR_MACRO_INSTRUMENTS                                           :{BLACK}Now: G {COMMA}, tax {NUM}%, autonomous tax {COMMA}, money {COMMA}
+STR_MACRO_LABOUR                                               :{BLACK}Population {COMMA}, growth {RAW_STRING}, unemployment {RAW_STRING}
+STR_MACRO_CAPACITY                                              :{BLACK}Cargo capacity {COMMA}, company investment {COMMA}, capital {COMMA}
+STR_MACRO_DEBT                                                  :{BLACK}Public debt {COMMA}, interest on the debt {COMMA}
 STR_MACRO_HUNDREDTHS                                            :{DECIMAL}%
 STR_MACRO_HUNDREDTHS_NEGATIVE                                   :-{DECIMAL}%
 STR_MACRO_G_DOWN                                                :G -10
@@ -1486,6 +1491,83 @@ STR_MACRO_M_UP                                                  :M +20
 STR_MACRO_M_TOOLTIP                                             :{BLACK}Change the nominal money supply. This shifts the LM curve
 STR_MACRO_OPEN_SETTINGS                                         :All parameters
 STR_MACRO_OPEN_SETTINGS_TOOLTIP                                 :{BLACK}Open the settings window. Every IS and LM coefficient, and the Phillips curve, can be edited there
+STR_CONFIG_SETTING_ISLM_SUBSIDIES                               :Subsidies: {STRING2}
+STR_CONFIG_SETTING_ISLM_SUBSIDIES_HELPTEXT                      :Subsidy payments in output points. They are added to government purchases, together with the extra profit the game pays on subsidised routes
+STR_MACRO_SUBSIDY_LINE                                          :{BLACK}Subsidies {COMMA}, route-subsidy payments last month {COMMA}
+STR_MACRO_S_DOWN                                                :S -10
+STR_MACRO_S_UP                                                  :S +10
+STR_MACRO_S_TOOLTIP                                             :{BLACK}Change subsidies. The payment is part of government spending
+STR_MACRO_OPEN_DASHBOARD                                        :Dashboard
+STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Open the live macro dashboard
+STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Macro dashboard
+STR_MACRO_EQ_OUTPUT                                             :{BLACK}Output {COMMA} = consumption {COMMA} + company investment {COMMA} + government {COMMA}
+STR_MACRO_EQ_GOVERNMENT                                         :{BLACK}Government {COMMA} = purchases {COMMA} + subsidies {COMMA} + route subsidies {COMMA}
+STR_MACRO_EQ_CARGO                                              :{BLACK}Cargo capacity {COMMA} implies potential {COMMA}. Phillips potential {COMMA}
+STR_MACRO_EQ_RATES                                              :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, unemployment {RAW_STRING}
+STR_MACRO_EQ_PUBLIC                                             :{BLACK}Public debt {COMMA}. Issued {COMMA}, bought back {COMMA}, interest {COMMA}
+STR_MACRO_EQ_PRIVATE                                            :{BLACK}Private debt {COMMA}, change {COMMA}, interest {COMMA}, loan ceiling {NUM}%
+STR_MACRO_LINK_INVESTMENT                                       :{BLACK}The interest rate cuts the loan ceiling and raises what companies pay on their debt, so construction and vehicle purchases fall. That spending is investment.
+STR_MACRO_LINK_DEBT                                             :{BLACK}A deficit issues bonds and raises the interest rate. A surplus buys bonds back, lowers the interest rate and raises the price of private debt.
+STR_MACRO_LINK_CARGO                                            :{BLACK}Cargo capacity is the base of potential output. Population and accumulated capital scale it, and prices pull output back toward it.
+STR_MACRO_LINK_SUBSIDY                                          :{BLACK}Subsidies, including the extra profit of subsidised routes, are part of government spending.
+STR_MACRO_SPEED_1                                               :x1
+STR_MACRO_SPEED_10                                              :x10
+STR_MACRO_SPEED_100                                             :x100
+STR_MACRO_SPEED_TOOLTIP                                         :{BLACK}Run the game at this multiple of normal speed
+STR_MACRO_OPEN_FLOW_GRAPH                                       :Inflation and debt
+STR_MACRO_OPEN_FLOW_GRAPH_TOOLTIP                               :{BLACK}Open the inflation and debt graph
+STR_MACRO_OPEN_ACTIVITY_GRAPH                                   :Output
+STR_MACRO_OPEN_ACTIVITY_GRAPH_TOOLTIP                           :{BLACK}Open the output, potential, investment and government graph
+STR_MACRO_GRAPH_FLOW_CAPTION                                    :{WHITE}Inflation and debt
+STR_MACRO_GRAPH_FLOW_FOOTER                                     :{TINY_FONT}{BLACK}Blue inflation (hundredths of a percent), red public-debt change, green private-debt change
+STR_MACRO_GRAPH_ACTIVITY_CAPTION                                :{WHITE}Output and government
+STR_MACRO_GRAPH_ACTIVITY_FOOTER                                 :{TINY_FONT}{BLACK}Blue output (the same output as the dashboard), red potential, green investment, orange government, purple subsidies
+STR_MACRO_EQ_SPLIT                                               :{BLACK}Output {COMMA} = game {COMMA} + exogenous impulse {COMMA}
+STR_GRAPH_MENU_MACRO_MONEY                                       :Prices and money
+STR_GRAPH_MENU_MACRO_ISLM                                        :IS-LM diagram
+STR_GRAPH_MENU_MACRO_ASAD                                        :Aggregate supply and demand
+STR_MACRO_OPEN_MONEY_GRAPH                                       :Prices and money
+STR_MACRO_OPEN_MONEY_GRAPH_TOOLTIP                               :{BLACK}Open the graph of the price index, real money supply and money demand
+STR_MACRO_OPEN_ISLM                                              :IS-LM
+STR_MACRO_OPEN_ISLM_TOOLTIP                                      :{BLACK}Open the IS-LM diagram. Output is the same variable as in the dashboard
+STR_MACRO_OPEN_ASAD                                              :AS-AD
+STR_MACRO_OPEN_ASAD_TOOLTIP                                      :{BLACK}Open the aggregate supply and demand diagram
+STR_MACRO_OPEN_LEDGER                                            :Variables
+STR_MACRO_OPEN_LEDGER_TOOLTIP                                    :{BLACK}Open every macro variable, marked endogenous or exogenous
+STR_MACRO_SPEED_MENU_1                                           :Normal speed (1x)
+STR_MACRO_SPEED_MENU_10                                          :Fast (10x)
+STR_MACRO_SPEED_MENU_100                                         :Very fast (100x)
+STR_MACRO_ISLM_CAPTION                                           :{WHITE}IS-LM
+STR_MACRO_ISLM_LEGEND                                            :{WHITE}Blue IS, red LM, orange equilibrium
+STR_MACRO_ASAD_CAPTION                                           :{WHITE}Aggregate supply and demand
+STR_MACRO_ASAD_LEGEND                                            :{WHITE}Blue demand, red short-run supply, green potential, orange equilibrium
+STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Macro variables
+STR_MACRO_GRAPH_MONEY_CAPTION                                    :{WHITE}Prices and money
+STR_MACRO_GRAPH_MONEY_FOOTER                                     :{TINY_FONT}{BLACK}Blue price index, red real money supply, green money demand
+STR_MACRO_VAR_OUTPUT                                             :{BLACK}Output {COMMA}. Endogenous. The sum of cargo units the companies delivered
+STR_MACRO_VAR_GAME                                               :{BLACK}Game part {COMMA}. Endogenous. The delivered cargo itself
+STR_MACRO_VAR_EXO                                                :{BLACK}Exogenous impulse {COMMA}. Policy moves the interest rate and investment. The product stays the delivered cargo
+STR_MACRO_VAR_C                                                  :{BLACK}Consumption {COMMA}. Endogenous. What remains of the income investment produced. Zero when investment is zero
+STR_MACRO_VAR_I                                                  :{BLACK}Company investment {COMMA}. Endogenous. Construction, new vehicles and infrastructure operating costs. This spending produces company income
+STR_MACRO_VAR_G                                                  :{BLACK}Government {COMMA}. Purchases and the subsidy setting are exogenous. Route payments come from the game
+STR_MACRO_VAR_YSTAR                                              :{BLACK}Potential {COMMA}. Endogenous. Cargo capacity, population and company capital
+STR_MACRO_VAR_P                                                  :{BLACK}Price index {COMMA}. Endogenous. The Phillips curve moves it
+STR_MACRO_VAR_M                                                  :{BLACK}Nominal money {COMMA}. Exogenous. Change it from the policy window
+STR_MACRO_VAR_RM                                                 :{BLACK}Real money supply {COMMA}. Endogenous. Nominal money divided by the price index
+STR_MACRO_VAR_MD                                                 :{BLACK}Money demand {COMMA}. Endogenous. It rises with output
+STR_MACRO_VAR_T                                                  :{BLACK}Tax revenue {COMMA}. The tax rate and autonomous tax are exogenous. Revenue follows output
+STR_MACRO_VAR_POP                                                :{BLACK}Population {COMMA}. Endogenous
+STR_MACRO_VAR_CARGO                                              :{BLACK}Cargo capacity {COMMA}. Endogenous. It is what potential output is built from
+STR_MACRO_VAR_GSET                                               :{BLACK}Government purchases {COMMA}. Exogenous
+STR_MACRO_VAR_SSET                                               :{BLACK}Subsidy setting {COMMA}. Exogenous. Raising it makes subsidised routes more profitable, so companies compete for them
+STR_MACRO_VAR_TAX                                                :{BLACK}Marginal tax rate {NUM}%. Exogenous
+STR_MACRO_VAR_T0                                                 :{BLACK}Autonomous tax {COMMA}. Exogenous
+STR_MACRO_VAR_C0                                                 :{BLACK}Autonomous consumption {COMMA}. Exogenous
+STR_MACRO_VAR_R                                                  :{BLACK}Interest {DECIMAL}%. Endogenous. Where LM crosses IS
+STR_MACRO_VAR_R_NEG                                              :{BLACK}Interest -{DECIMAL}%. Endogenous. Where LM crosses IS
+STR_MACRO_VAR_PI                                                 :{BLACK}Inflation {DECIMAL}%. Endogenous. The Phillips curve
+STR_MACRO_VAR_PI_NEG                                             :{BLACK}Inflation -{DECIMAL}%. Endogenous. The Phillips curve
+STR_MACRO_VAR_U                                                  :{BLACK}Unemployment {DECIMAL}%. Endogenous. Five percent minus half of the output gap
 STR_NEWS_MACRO_REPORT                                           :{BIG_FONT}{BLACK}Central bank report{}{}Interest {NUM}%, inflation {NUM}% and expected inflation {NUM}%.
 STR_FINANCES_INTEREST_RATE_MACRO                                :{WHITE}Loan interest: {BLACK}{DECIMAL}%
 
@@ -6141,3 +6223,7 @@ STR_BADGE_CONFIG_FILTERS                                        :{WHITE}Badge Fi
 STR_BADGE_CONFIG_PREVIEW                                        :Preview Image
 STR_BADGE_CONFIG_NAME                                           :Name
 STR_BADGE_FILTER_ANY_LABEL                                      :Any {STRING}
+
+STR_MACRO_SPEED_1000                                            :x1000
+STR_MACRO_SPEED_MENU_1000                                       :Fastest (1000x)
+STR_MACRO_VAR_DEBT_PRICE                                        :{BLACK}Private-debt price {COMMA}. Endogenous. It rises when a government surplus cuts the interest rate

@@ -63,6 +63,10 @@ void ShowSubsidiesList();
 
 /* macro_economy_gui.cpp */
 void ShowMacroEconomy();
+void ShowMacroDashboard();
+void ShowMacroIsLmDiagram();
+void ShowMacroAsAdDiagram();
+void ShowMacroLedger();
 
 /* story_gui.cpp */
 void ShowStoryBook(CompanyID company, StoryPageID page_id = StoryPageID::Invalid(), bool centered = false);

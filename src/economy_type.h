@@ -14,6 +14,8 @@
 #include "core/enum_type.hpp"
 #include "core/pool_type.hpp"
 
+#include <array>
+
 typedef OverflowSafeInt64 Money;
 
 /** Type of the game economy. */
@@ -66,6 +68,42 @@ struct Economy {
 	int32_t macro_tax_revenue;              ///< Equilibrium tax revenue
 	int32_t macro_real_money;               ///< Real money balances, M / P
 	uint8_t macro_ok;                       ///< 1 when the last IS-LM solve found an equilibrium
+	int32_t macro_natural_output;           ///< Living potential output. It starts at the baseline and moves with population, cargo capacity and capital
+	int32_t macro_unemployment_bp;          ///< Okun unemployment, hundredths of a percent
+	int32_t macro_population_growth_bp;     ///< Town population growth over the last economy month, hundredths of a percent
+	int32_t macro_company_investment;       ///< This month's company construction and vehicle purchases, in output points
+	int32_t macro_debt_service;             ///< Interest the treasury pays on the public debt this month
+	int32_t macro_lagged_inflation_bp;      ///< Inflation already realised, the rate that pushes households to spend
+	int64_t macro_debt;                     ///< Public debt, in output points. A surplus pays it down
+	int64_t macro_capital;                  ///< Cumulated real company investment, after depreciation
+	int64_t macro_population;               ///< Town population last observed
+	int64_t macro_population_snapshot;      ///< Town population at the previous economy month, used for the growth rate
+	int64_t macro_population_base;          ///< Town population when the living potential output was anchored
+	int64_t macro_cargo_capacity;           ///< Installed vehicle cargo capacity
+	int64_t macro_cargo_capacity_base;      ///< Cargo capacity when the living potential output was anchored
+	int64_t macro_company_spent_year;       ///< Construction and new-vehicle spending booked so far this economy year, in pounds
+	int32_t macro_cargo_potential;          ///< Potential output implied by installed cargo capacity
+	int32_t macro_government;               ///< Government spending that enters demand: purchases + subsidies + route-subsidy payments
+	int32_t macro_game_output;              ///< Part of output that comes from the game: potential, company investment and route subsidies
+	int32_t macro_exogenous_output;         ///< Part of output that moved because an exogenous policy variable changed
+	int32_t macro_money_demand;             ///< Money demanded at a zero interest rate, kY
+	int32_t macro_demand_anchor;            ///< Autonomous demand when output was anchored to the game
+	int32_t macro_game_anchor;              ///< Game part of autonomous demand at that same moment
+	uint8_t macro_anchor_set;               ///< 1 once output has been anchored to the game's potential
+	int32_t macro_subsidy_game;             ///< Route-subsidy payments of the last closed month, in output points
+	int32_t macro_bond_issue;               ///< Bonds issued this month
+	int32_t macro_bond_buyback;             ///< Bonds bought back this month
+	int32_t macro_private_debt_delta;       ///< Change in private debt this month
+	int32_t macro_private_interest;         ///< Interest companies owe on their loans this month, in output points
+	int32_t macro_private_debt_price;       ///< Price of private debt. It rises when the interest rate falls
+	int64_t macro_private_debt;             ///< Company loans, deflated to output points
+	int64_t macro_subsidy_pounds;           ///< Route-subsidy payments booked so far this month, in pounds
+	uint8_t macro_bond_count;               ///< Cohorts in the public bond book
+	uint8_t macro_history_count;            ///< Months stored for the macro graphs, up to 24
+	std::array<int32_t, 192> macro_history{}; ///< Eight series of 24 months: inflation, public-debt change, private-debt change, output, cargo potential, investment, government, subsidies
+	std::array<int32_t, 192> macro_history_prices{}; ///< Eight more series: price, real money, money demand, consumption, interest, unemployment, taxes, exogenous impulse
+	std::array<int32_t, 48> macro_bond_amount{}; ///< Face value of each bond cohort
+	std::array<int16_t, 48> macro_bond_coupon{}; ///< Coupon of each cohort, hundredths of a percent per year
 
 	/* Old stuff for savegame conversion only */
 	Money old_max_loan_unround;           ///< Old: Unrounded max loan

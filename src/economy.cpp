@@ -903,9 +903,8 @@ void StartupIndustryDailyChanges(bool init_counter)
 
 void StartupEconomy()
 {
-	if (_settings_game.economy.islm_enabled) {
-		ResetMacroEconomy();
-	} else {
+	ResetMacroEconomy();
+	if (!_settings_game.economy.islm_enabled) {
 		_economy.interest_rate = _settings_game.difficulty.initial_interest;
 		_economy.infl_amount = _settings_game.difficulty.initial_interest;
 		_economy.infl_amount_pr = std::max(0, _settings_game.difficulty.initial_interest - 1);
@@ -1124,6 +1123,7 @@ static Money DeliverGoods(int num_pieces, CargoType cargo_type, StationID dest, 
 
 	/* Update company statistics */
 	company->cur_economy.delivered_cargo[cargo_type] += accepted_total;
+	MacroNoteCargoDelivery(accepted_total);
 
 	/* Increase town's counter for town effects */
 	const CargoSpec *cs = CargoSpec::Get(cargo_type);
@@ -1139,7 +1139,8 @@ static Money DeliverGoods(int num_pieces, CargoType cargo_type, StationID dest, 
 	/* Update the cargo monitor. */
 	AddCargoDelivery(cargo_type, company->index, accepted_total - accepted_ind, src, st);
 
-	/* Modify profit if a subsidy is in effect */
+	/* Modify profit if a subsidy is in effect. The extra payment is government spending. */
+	const Money profit_before_subsidy = profit;
 	if (CheckSubsidised(cargo_type, company->index, src, st))  {
 		switch (_settings_game.difficulty.subsidy_multiplier) {
 			case 0:  profit += profit >> 1; break;
@@ -1147,6 +1148,12 @@ static Money DeliverGoods(int num_pieces, CargoType cargo_type, StationID dest, 
 			case 2:  profit *= 3; break;
 			default: profit *= 4; break;
 		}
+		/* A larger subsidy setting makes the route more profitable, so companies compete for it. */
+		if (_settings_game.economy.islm_enabled && _settings_game.economy.islm_subsidies > 0) {
+			const int extra = std::min<int>(_settings_game.economy.islm_subsidies / 100, 4);
+			profit += profit_before_subsidy * extra / 2;
+		}
+		MacroNoteSubsidyPayment(static_cast<int64_t>(profit - profit_before_subsidy));
 	}
 
 	return profit;

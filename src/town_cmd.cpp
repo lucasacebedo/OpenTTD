@@ -22,6 +22,7 @@
 #include "command_func.h"
 #include "company_func.h"
 #include "industry.h"
+#include "macro_economy.h"
 #include "station_base.h"
 #include "station_func.h"
 #include "waypoint_base.h"
@@ -522,8 +523,9 @@ static void TownGenerateCargo(Town *t, CargoType cargo, uint amount, StationFind
 		amount = (amount + 1) >> 1;
 	}
 
-	/* Scale by cargo scale setting. */
+	/* Scale by cargo scale setting, then by how fast this town is growing. */
 	amount = ScaleByCargoScale(amount, true);
+	amount = amount * MacroTownIncentivePermyriad(t->flags.Test(TownFlag::IsGrowing), t->growth_rate) / 10000;
 	if (amount == 0) return;
 
 	/* Actually generate cargo and update town statistics. */

@@ -13,6 +13,7 @@
 #include "bridge_map.h"
 #include "clear_map.h"
 #include "industry.h"
+#include "macro_economy.h"
 #include "station_base.h"
 #include "station_func.h"
 #include "landscape.h"
@@ -1153,10 +1154,11 @@ static void ProduceIndustryGoodsHelper(Industry *i, bool scale)
 	for (auto &p : i->produced) {
 		if (!IsValidCargoType(p.cargo)) continue;
 
-		uint16_t amount = p.rate;
-		if (scale) amount = ScaleByCargoScale(amount, false);
+		uint amount = p.rate;
+		if (scale) amount = ScaleByCargoScale(static_cast<uint>(p.rate), false);
+		amount = amount * MacroIndustryIncentivePermyriad(i->prod_level) / 10000;
 
-		p.waiting = ClampTo<uint16_t>(p.waiting + amount);
+		p.waiting = ClampTo<uint16_t>(static_cast<uint>(p.waiting) + amount);
 	}
 }
 

@@ -43,6 +43,7 @@
 #include "tilehighlight_func.h"
 #include "smallmap_gui.h"
 #include "graph_gui.h"
+#include "macro_economy.h"
 #include "textbuf_gui.h"
 #include "linkgraph/linkgraph_gui.h"
 #include "linkgraph/linkgraphschedule.h"
@@ -229,13 +230,26 @@ static CallBackFunction ToolbarPauseClick(Window *)
  *
  * @return #CallBackFunction::None
  */
-static CallBackFunction ToolbarFastForwardClick(Window *)
+static CallBackFunction MenuClickGameSpeed(int index)
+{
+	if (_networking) return CallBackFunction::None;
+	if (index != 100 && index != 1000 && index != 10000 && index != 100000) return CallBackFunction::None;
+	_game_speed = static_cast<uint32_t>(index);
+	if (index != 100) _settings_client.gui.fast_forward_speed_limit = static_cast<uint32_t>(index);
+	return CallBackFunction::None;
+}
+
+static CallBackFunction ToolbarFastForwardClick(Window *w)
 {
 	if (_networking) return CallBackFunction::None; // no fast forward in network game
 
-	ChangeGameSpeed(_game_speed == 100);
-
-	SndClickBeep();
+	DropDownList list;
+	list.push_back(MakeDropDownListStringItem(STR_MACRO_SPEED_MENU_1, 100));
+	list.push_back(MakeDropDownListStringItem(STR_MACRO_SPEED_MENU_10, 1000));
+	list.push_back(MakeDropDownListStringItem(STR_MACRO_SPEED_MENU_100, 10000));
+	list.push_back(MakeDropDownListStringItem(STR_MACRO_SPEED_MENU_1000, 100000));
+	const int selected = (_game_speed == 1000 || _game_speed == 10000 || _game_speed == 100000) ? static_cast<int>(_game_speed) : 100;
+	ShowDropDownList(w, std::move(list), selected, WID_TN_FAST_FORWARD, 0, GetToolbarDropDownOptions());
 	return CallBackFunction::None;
 }
 
@@ -672,6 +686,11 @@ static const int GRMN_DELIVERED_CARGO_GRAPH = -3;     ///< Show delivered cargo 
 static const int GRMN_PERFORMANCE_HISTORY_GRAPH = -4; ///< Show performance history graph
 static const int GRMN_COMPANY_VALUE_GRAPH = -5;       ///< Show company value graph
 static const int GRMN_CARGO_PAYMENT_RATES = -6;       ///< Show cargo payment rates graph
+static const int GRMN_MACRO_FLOW_GRAPH = -10;         ///< Inflation and debt graph
+static const int GRMN_MACRO_MONEY_GRAPH = -12;        ///< Prices and money graph
+static const int GRMN_MACRO_ISLM_GRAPH = -13;         ///< IS-LM diagram
+static const int GRMN_MACRO_ASAD_GRAPH = -14;         ///< Aggregate supply and demand
+static const int GRMN_MACRO_ACTIVITY_GRAPH = -11;     ///< Output and government graph
 static const int LTMN_PERFORMANCE_LEAGUE = -7;        ///< Show default league table
 static const int LTMN_PERFORMANCE_RATING = -8;        ///< Show detailed performance rating
 static const int LTMN_HIGHSCORE          = -9;        ///< Show highscrore table
@@ -701,6 +720,11 @@ static CallBackFunction ToolbarGraphsClick(Window *w)
 	list.push_back(MakeDropDownListStringItem(STR_GRAPH_MENU_PERFORMANCE_HISTORY_GRAPH, GRMN_PERFORMANCE_HISTORY_GRAPH));
 	list.push_back(MakeDropDownListStringItem(STR_GRAPH_MENU_COMPANY_VALUE_GRAPH, GRMN_COMPANY_VALUE_GRAPH));
 	list.push_back(MakeDropDownListStringItem(STR_GRAPH_MENU_CARGO_PAYMENT_RATES, GRMN_CARGO_PAYMENT_RATES));
+	for (int series = 0; series < MACRO_HIST_SERIES * 2; series++) {
+		list.push_back(MakeDropDownListStringItem(std::string(MacroSeriesName(series)), 1000 + series));
+	}
+	list.push_back(MakeDropDownListStringItem(STR_GRAPH_MENU_MACRO_ISLM, GRMN_MACRO_ISLM_GRAPH));
+	list.push_back(MakeDropDownListStringItem(STR_GRAPH_MENU_MACRO_ASAD, GRMN_MACRO_ASAD_GRAPH));
 
 	if (_toolbar_mode != ToolbarMode::Normal) AddDropDownLeagueTableOptions(list);
 
@@ -734,11 +758,15 @@ static CallBackFunction MenuClickGraphsOrLeague(int index)
 		case GRMN_PERFORMANCE_HISTORY_GRAPH: ShowPerformanceHistoryGraph(); break;
 		case GRMN_COMPANY_VALUE_GRAPH: ShowCompanyValueGraph(); break;
 		case GRMN_CARGO_PAYMENT_RATES: ShowCargoPaymentRates(); break;
+		case GRMN_MACRO_ISLM_GRAPH: ShowMacroIsLmDiagram(); break;
+		case GRMN_MACRO_ASAD_GRAPH: ShowMacroAsAdDiagram(); break;
 		case LTMN_PERFORMANCE_LEAGUE: ShowPerformanceLeagueTable(); break;
 		case LTMN_PERFORMANCE_RATING: ShowPerformanceRatingDetail(); break;
 		case LTMN_HIGHSCORE: ShowHighscoreTable(); break;
 		default: {
-			if (LeagueTable::IsValidID(index)) {
+			if (index >= 1000 && index < 1000 + MACRO_HIST_SERIES * 2) {
+				ShowMacroSingleGraph(index - 1000);
+			} else if (LeagueTable::IsValidID(index)) {
 				ShowScriptLeagueTable((LeagueTableID)index);
 			}
 		}
@@ -1346,7 +1374,7 @@ typedef CallBackFunction MenuClickedProc(int index);
 
 static MenuClickedProc * const _menu_clicked_procs[] = {
 	nullptr,                 // 0
-	nullptr,                 // 1
+	MenuClickGameSpeed,     // 1
 	MenuClickSettings,    // 2
 	MenuClickSaveLoad,    // 3
 	MenuClickMap,         // 4
@@ -2057,7 +2085,15 @@ struct MainToolbarWindow : Window {
 		CallBackFunction cbf = CallBackFunction::None;
 		switch (hotkey) {
 			case MTHK_PAUSE: ToolbarPauseClick(this); break;
-			case MTHK_FASTFORWARD: ToolbarFastForwardClick(this); break;
+			case MTHK_FASTFORWARD:
+				if (!_networking) {
+					if (_game_speed < 1000) _game_speed = 1000;
+					else if (_game_speed < 10000) _game_speed = 10000;
+					else if (_game_speed < 100000) _game_speed = 100000;
+					else _game_speed = 100;
+					if (_game_speed != 100) _settings_client.gui.fast_forward_speed_limit = _game_speed;
+				}
+				break;
 			case MTHK_SETTINGS: ShowGameOptions(); break;
 			case MTHK_SAVEGAME: MenuClickSaveLoad(); break;
 			case MTHK_LOADGAME: ShowSaveLoadDialog(AbstractFileType::Savegame, SaveLoadOperation::Load); break;

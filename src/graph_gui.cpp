@@ -29,6 +29,7 @@
 #include "zoom_func.h"
 #include "industry.h"
 #include "town.h"
+#include "macro_economy.h"
 
 #include "widgets/graph_widget.h"
 
@@ -2129,6 +2130,152 @@ static WindowDesc _performance_rating_detail_desc(
 void ShowPerformanceRatingDetail()
 {
 	AllocateWindowDescFront<PerformanceRatingDetailWindow>(_performance_rating_detail_desc, 0);
+}
+
+struct MacroSeriesGraphWindow : BaseGraphWindow {
+	const int *series = nullptr;
+	int series_count = 0;
+	const Colours *colours = nullptr;
+
+	MacroSeriesGraphWindow(WindowDesc &desc, WindowNumber number, StringID footer, const int *series, int series_count, const Colours *colours) :
+			BaseGraphWindow(desc, STR_JUST_COMMA), series(series), series_count(series_count), colours(colours)
+	{
+		this->num_on_x_axis = GRAPH_NUM_MONTHS;
+		this->num_vert_lines = GRAPH_NUM_MONTHS;
+		this->month_increment = 1;
+		this->draw_dates = !TimerGameEconomy::UsingWallclockUnits();
+		this->CreateNestedTree();
+		this->GetWidget<NWidgetCore>(WID_GRAPH_FOOTER)->SetString(footer);
+		this->FinishInitNested(number);
+		this->UpdateStatistics(true);
+	}
+
+	void UpdateStatistics(bool initialize) override
+	{
+		const int count = std::min(MacroHistoryCount(), GRAPH_NUM_MONTHS);
+		int month = static_cast<int>(TimerGameEconomy::month) - std::max(count - 1, 0);
+		auto year = TimerGameEconomy::year;
+		while (month < 0) {
+			year--;
+			month += 12;
+		}
+		if (!initialize && this->num_on_x_axis == count && this->year == year && this->month == month) return;
+
+		this->num_on_x_axis = static_cast<uint8_t>(std::max(count, 1));
+		this->year = year;
+		this->month = month;
+		this->data.clear();
+		for (int s = 0; s < this->series_count; s++) {
+			DataSet &dataset = this->data.emplace_back();
+			dataset.colour = GetColourGradient(this->colours[s], Shade::Lighter);
+			dataset.exclude_bit = static_cast<uint8_t>(s);
+			dataset.range_bit = 0;
+			for (int i = 0; i < this->num_on_x_axis; i++) {
+				if (count == 0) {
+					dataset.values[i] = INVALID_DATAPOINT;
+				} else {
+					const int age = count - 1 - i;
+					dataset.values[i] = MacroHistoryValue(this->series[s], age);
+				}
+			}
+		}
+	}
+};
+
+static constexpr int _macro_flow_series[] = {MACRO_HIST_INFLATION, MACRO_HIST_PUBLIC_DEBT, MACRO_HIST_PRIVATE_DEBT};
+static constexpr Colours _macro_flow_colours[] = {Colours::Blue, Colours::Red, Colours::Green};
+
+static constexpr std::initializer_list<NWidgetPart> _nested_macro_flow_graph_widgets = {
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_CLOSEBOX, Colours::Brown),
+		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_GRAPH_FLOW_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_SHADEBOX, Colours::Brown),
+		NWidget(WWT_DEFSIZEBOX, Colours::Brown),
+		NWidget(WWT_STICKYBOX, Colours::Brown),
+	EndContainer(),
+	NWidget(WWT_PANEL, Colours::Brown, WID_GRAPH_BACKGROUND),
+		NWidget(WWT_EMPTY, Colours::Invalid, WID_GRAPH_GRAPH), SetMinimalSize(576, 160), SetFill(1, 1), SetResize(1, 1),
+		NWidget(NWID_HORIZONTAL),
+			NWidget(WWT_TEXT, Colours::Invalid, WID_GRAPH_FOOTER), SetFill(1, 0), SetResize(1, 0), SetPadding(2, 0, 2, 0), SetTextStyle(TextColour::Black, FontSize::Small), SetAlignment({AlignmentH::Centre, AlignmentV::Middle}),
+			NWidget(WWT_RESIZEBOX, Colours::Brown, WID_GRAPH_RESIZE), SetResizeWidgetTypeTip(ResizeWidgetType::HideBevel, STR_TOOLTIP_RESIZE),
+		EndContainer(),
+	EndContainer(),
+};
+
+static WindowDesc _macro_flow_graph_desc(
+	WindowPosition::Automatic, "graph_macro_flow", 0, 0,
+	WindowClass::MacroFlowGraph, WindowClass::None,
+	{},
+	_nested_macro_flow_graph_widgets
+);
+
+void ShowMacroFlowGraph()
+{
+	AllocateWindowDescFront<MacroSeriesGraphWindow>(_macro_flow_graph_desc, 0, STR_MACRO_GRAPH_FLOW_FOOTER, _macro_flow_series, 3, _macro_flow_colours);
+}
+
+static constexpr int _macro_activity_series[] = {MACRO_HIST_OUTPUT, MACRO_HIST_POTENTIAL, MACRO_HIST_INVESTMENT, MACRO_HIST_GOVERNMENT, MACRO_HIST_SUBSIDIES};
+static constexpr Colours _macro_activity_colours[] = {Colours::Blue, Colours::Red, Colours::Green, Colours::Orange, Colours::Purple};
+
+static constexpr std::initializer_list<NWidgetPart> _nested_macro_activity_graph_widgets = {
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_CLOSEBOX, Colours::Brown),
+		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_GRAPH_ACTIVITY_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_SHADEBOX, Colours::Brown),
+		NWidget(WWT_DEFSIZEBOX, Colours::Brown),
+		NWidget(WWT_STICKYBOX, Colours::Brown),
+	EndContainer(),
+	NWidget(WWT_PANEL, Colours::Brown, WID_GRAPH_BACKGROUND),
+		NWidget(WWT_EMPTY, Colours::Invalid, WID_GRAPH_GRAPH), SetMinimalSize(576, 160), SetFill(1, 1), SetResize(1, 1),
+		NWidget(NWID_HORIZONTAL),
+			NWidget(WWT_TEXT, Colours::Invalid, WID_GRAPH_FOOTER), SetFill(1, 0), SetResize(1, 0), SetPadding(2, 0, 2, 0), SetTextStyle(TextColour::Black, FontSize::Small), SetAlignment({AlignmentH::Centre, AlignmentV::Middle}),
+			NWidget(WWT_RESIZEBOX, Colours::Brown, WID_GRAPH_RESIZE), SetResizeWidgetTypeTip(ResizeWidgetType::HideBevel, STR_TOOLTIP_RESIZE),
+		EndContainer(),
+	EndContainer(),
+};
+
+static WindowDesc _macro_activity_graph_desc(
+	WindowPosition::Automatic, "graph_macro_activity", 0, 0,
+	WindowClass::MacroActivityGraph, WindowClass::None,
+	{},
+	_nested_macro_activity_graph_widgets
+);
+
+void ShowMacroActivityGraph()
+{
+	AllocateWindowDescFront<MacroSeriesGraphWindow>(_macro_activity_graph_desc, 0, STR_MACRO_GRAPH_ACTIVITY_FOOTER, _macro_activity_series, 5, _macro_activity_colours);
+}
+
+static constexpr int _macro_money_series[] = {MACRO_HIST2_PRICE, MACRO_HIST2_REAL_MONEY, MACRO_HIST2_MONEY_DEMAND};
+static constexpr Colours _macro_money_colours[] = {Colours::Blue, Colours::Red, Colours::Green};
+
+static constexpr std::initializer_list<NWidgetPart> _nested_macro_money_graph_widgets = {
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_CLOSEBOX, Colours::Brown),
+		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_GRAPH_MONEY_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_SHADEBOX, Colours::Brown),
+		NWidget(WWT_DEFSIZEBOX, Colours::Brown),
+		NWidget(WWT_STICKYBOX, Colours::Brown),
+	EndContainer(),
+	NWidget(WWT_PANEL, Colours::Brown, WID_GRAPH_BACKGROUND),
+		NWidget(WWT_EMPTY, Colours::Invalid, WID_GRAPH_GRAPH), SetMinimalSize(576, 160), SetFill(1, 1), SetResize(1, 1),
+		NWidget(NWID_HORIZONTAL),
+			NWidget(WWT_TEXT, Colours::Invalid, WID_GRAPH_FOOTER), SetFill(1, 0), SetResize(1, 0), SetPadding(2, 0, 2, 0), SetTextStyle(TextColour::Black, FontSize::Small), SetAlignment({AlignmentH::Centre, AlignmentV::Middle}),
+			NWidget(WWT_RESIZEBOX, Colours::Brown, WID_GRAPH_RESIZE), SetResizeWidgetTypeTip(ResizeWidgetType::HideBevel, STR_TOOLTIP_RESIZE),
+		EndContainer(),
+	EndContainer(),
+};
+
+static WindowDesc _macro_money_graph_desc(
+	WindowPosition::Automatic, "graph_macro_money", 0, 0,
+	WindowClass::MacroMoneyGraph, WindowClass::None,
+	{},
+	_nested_macro_money_graph_widgets
+);
+
+void ShowMacroMoneyGraph()
+{
+	AllocateWindowDescFront<MacroSeriesGraphWindow>(_macro_money_graph_desc, 0, STR_MACRO_GRAPH_MONEY_FOOTER, _macro_money_series, 3, _macro_money_colours);
 }
 
 void InitializeGraphGui()

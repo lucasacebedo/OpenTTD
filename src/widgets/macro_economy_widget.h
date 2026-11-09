@@ -21,7 +21,30 @@ enum MacroEconomyWidgets : WidgetID {
 	WID_MACRO_T0_UP,
 	WID_MACRO_M_DOWN,
 	WID_MACRO_M_UP,
+	WID_MACRO_S_DOWN,
+	WID_MACRO_S_UP,
 	WID_MACRO_SETTINGS,
+	WID_MACRO_DASHBOARD,
+};
+
+/** Widgets of the #MacroDashboardWindow class. */
+enum MacroDashboardWidgets : WidgetID {
+	WID_MDASH_PANEL,
+	WID_MDASH_SPEED1,
+	WID_MDASH_SPEED10,
+	WID_MDASH_SPEED100,
+	WID_MDASH_SPEED1000,
+	WID_MDASH_FLOW,
+	WID_MDASH_ACTIVITY,
+	WID_MDASH_MONEY,
+	WID_MDASH_ISLM,
+	WID_MDASH_ASAD,
+	WID_MDASH_LEDGER,
+};
+
+/** Widgets of the IS-LM diagram, the AS-AD diagram and the variable ledger. */
+enum MacroDiagramWidgets : WidgetID {
+	WID_MDIAG_PANEL,
 };
 
 #endif /* WIDGETS_MACRO_ECONOMY_WIDGET_H */

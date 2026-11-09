@@ -749,6 +749,48 @@ enum class WindowClass : uint16_t {
 	 */
 	MacroEconomy,
 
+	/**
+	 * Live macro dashboard; %Window numbers:
+	 *   - 0 = #MacroDashboardWidgets
+	 */
+	MacroDashboard,
+
+	/**
+	 * Inflation and debt graph; %Window numbers:
+	 *   - 0 = #GraphWidgets
+	 */
+	MacroFlowGraph,
+
+	/**
+	 * Output, potential, investment and government graph; %Window numbers:
+	 *   - 0 = #GraphWidgets
+	 */
+	MacroActivityGraph,
+
+	/**
+	 * Price, real money and money-demand graph; %Window numbers:
+	 *   - 0 = #GraphWidgets
+	 */
+	MacroMoneyGraph,
+
+	/**
+	 * IS-LM diagram; %Window numbers:
+	 *   - 0 = #MacroDiagramWidgets
+	 */
+	MacroIsLmGraph,
+
+	/**
+	 * Aggregate supply and demand diagram; %Window numbers:
+	 *   - 0 = #MacroDiagramWidgets
+	 */
+	MacroAsAdGraph,
+
+	/**
+	 * Ledger of endogenous and exogenous macro variables; %Window numbers:
+	 *   - 0 = #MacroDiagramWidgets
+	 */
+	MacroLedger,
+
 	Invalid = 0xFFFF, ///< Invalid window.
 };
 

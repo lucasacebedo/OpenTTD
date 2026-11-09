@@ -5947,3 +5947,287 @@ STR_BADGE_CONFIG_FILTERS                                        :{WHITE}Filtros 
 STR_BADGE_CONFIG_PREVIEW                                        :Vista previa de imagen
 STR_BADGE_CONFIG_NAME                                           :Nombre
 STR_BADGE_FILTER_ANY_LABEL                                      :Cualquier {STRING}
+
+# Cadenas que faltaban en español. Los marcadores {COMANDO} se conservan igual que en inglés.
+STR_GRAPH_MENU_MACRO_FLOW                                       :Gráfica de inflación y deuda
+STR_GRAPH_MENU_MACRO_ACTIVITY                                   :Gráfica de producto y gasto público
+STR_LANDSCAPING_MENU_PLACE_OBJECT                               :Colocar objeto
+STR_ABOUT_MENU_ENTER_SCREENSAVER_MODE                           :Activar el protector de pantalla
+STR_GRAPH_INDUSTRY_RANGE_PRODUCED_TOOLTIP                       :Muestra u oculta la gráfica de la carga producida por esta industria
+STR_GRAPH_INDUSTRY_RANGE_TRANSPORTED_TOOLTIP                    :Muestra u oculta la gráfica de la carga transportada desde esta industria
+STR_GRAPH_INDUSTRY_RANGE_DELIVERED_TOOLTIP                      :Muestra u oculta la gráfica de la carga entregada a esta industria
+STR_GRAPH_INDUSTRY_RANGE_WAITING_TOOLTIP                        :Muestra u oculta la gráfica de la carga en espera en esta industria
+STR_GRAPH_TOWN_RANGE_PRODUCED_TOOLTIP                           :Muestra u oculta la gráfica de la carga producida por este municipio
+STR_GRAPH_TOWN_RANGE_TRANSPORTED_TOOLTIP                        :Muestra u oculta la gráfica de la carga transportada desde este municipio
+STR_GRAPH_TOWN_RANGE_DELIVERED                                  :Entregado
+STR_GRAPH_TOWN_RANGE_DELIVERED_TOOLTIP                          :Muestra u oculta la gráfica de la carga entregada a este municipio
+STR_CONFIG_SETTING_TRAIN_FLIP_REVERSE                           :Permitir que los trenes den la vuelta al invertir el sentido: {STRING}
+STR_CONFIG_SETTING_TRAIN_FLIP_REVERSE_HELPTEXT                  :Elige dónde pueden dar la vuelta los trenes para invertir el sentido. Con «Todos» pueden hacerlo en cualquier sitio. Con «Solo al final de la línea» no darán la vuelta en las estaciones si existe una ruta hacia delante. Con «Ninguno» no pueden dar la vuelta y circularán marcha atrás si hace falta, aunque a menor velocidad si el vehículo de cola no tiene cabina de conducción
+STR_CONFIG_SETTING_TRAIN_FLIP_REVERSE_ALL                       :Todos
+STR_CONFIG_SETTING_TRAIN_FLIP_REVERSE_END_OF_LINE_ONLY          :Solo al final de la línea
+STR_CONFIG_SETTING_TRAIN_FLIP_REVERSE_NONE                      :Ninguno
+STR_CONFIG_SETTING_MACRO_PAGE                                   :IS-LM y curva de Phillips
+STR_CONFIG_SETTING_ISLM_ENABLED                                 :IS-LM y curva de Phillips: {STRING}
+STR_CONFIG_SETTING_ISLM_ENABLED_HELPTEXT                        :El interés de los préstamos, la inflación de los precios y la actividad de la carga salen de un equilibrio IS-LM de economía cerrada y de una curva de Phillips con expectativas. A corto plazo el producto sigue a la demanda, los saldos reales y el tipo de interés. A largo plazo los precios devuelven el producto a un nivel potencial que crece con la población, la capacidad de carga y la inversión de las empresas. Mientras está activado, sustituye la inflación clásica. Todos los coeficientes de abajo se pueden cambiar durante la partida
+STR_CONFIG_SETTING_ISLM_GOVERNMENT                              :Gasto público: {STRING}
+STR_CONFIG_SETTING_ISLM_GOVERNMENT_HELPTEXT                     :Compras del Estado, en los mismos puntos de índice que el producto. Los subsidios y el beneficio extra de las rutas subvencionadas se suman a este valor antes de entrar en la demanda
+STR_CONFIG_SETTING_ISLM_TAX_RATE                                :Tipo impositivo marginal: {STRING}
+STR_CONFIG_SETTING_ISLM_TAX_RATE_HELPTEXT                       :Instrumento de política fiscal t. La recaudación es el impuesto autónomo más este porcentaje del producto
+STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX                          :Impuesto autónomo: {STRING}
+STR_CONFIG_SETTING_ISLM_AUTONOMOUS_TAX_HELPTEXT                 :Instrumento de política fiscal T0, la parte de los impuestos que no depende del producto
+STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY                            :Oferta monetaria nominal: {STRING}
+STR_CONFIG_SETTING_ISLM_MONEY_SUPPLY_HELPTEXT                   :Instrumento de política monetaria M. Los saldos reales son M por 1000, dividido por el índice de precios macro. Subir M desplaza la curva LM hacia fuera
+STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT                          :Producto natural: {STRING}
+STR_CONFIG_SETTING_ISLM_NATURAL_OUTPUT_HELPTEXT                 :Base del producto potencial. La capacidad de carga instalada es el indicador: tras la primera lectura, un uno por ciento más de capacidad es un uno por ciento más de potencial. La población y el capital de las empresas escalan ese nivel, y la curva de Phillips acerca el producto hacia él
+STR_CONFIG_SETTING_ISLM_CONSUMPTION                             :Consumo autónomo: {STRING}
+STR_CONFIG_SETTING_ISLM_CONSUMPTION_HELPTEXT                    :Consumo con renta disponible nula, C0
+STR_CONFIG_SETTING_ISLM_MPC                                     :Propensión marginal a consumir: {STRING}
+STR_CONFIG_SETTING_ISLM_MPC_HELPTEXT                            :Parte de la renta disponible adicional que se consume. Se mantiene por debajo del 100 por ciento para que el mercado de bienes tenga un multiplicador finito
+STR_CONFIG_SETTING_ISLM_INVESTMENT                              :Inversión autónoma: {STRING}
+STR_CONFIG_SETTING_ISLM_INVESTMENT_HELPTEXT                     :Suelo de referencia. La inversión que entra en el producto es lo que las empresas gastan en construcción y vehículos nuevos. El tipo de interés llega a ese gasto por el coste y el tope de sus préstamos
+STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY                  :Sensibilidad de la inversión al interés: {STRING}
+STR_CONFIG_SETTING_ISLM_INVESTMENT_SENSITIVITY_HELPTEXT         :Cuántos puntos de producto pierde la inversión por cada punto porcentual del tipo de interés
+STR_CONFIG_SETTING_ISLM_MONEY_INCOME                            :Sensibilidad de la demanda de dinero a la renta: {STRING}
+STR_CONFIG_SETTING_ISLM_MONEY_INCOME_HELPTEXT                   :Porcentaje del producto que se mantiene como saldos reales cuando el tipo de interés es cero
+STR_CONFIG_SETTING_ISLM_MONEY_INTEREST                          :Sensibilidad de la demanda de dinero al interés: {STRING}
+STR_CONFIG_SETTING_ISLM_MONEY_INTEREST_HELPTEXT                 :Cuántos puntos de saldos reales pierde la demanda de dinero por cada punto porcentual del tipo de interés
+STR_CONFIG_SETTING_ISLM_INITIAL_PRICE                           :Índice de precios macro inicial: {STRING}
+STR_CONFIG_SETTING_ISLM_INITIAL_PRICE_HELPTEXT                  :Índice de precios al empezar una partida. 1000 es la base en la que el dinero nominal equivale al dinero real. Después se mueve con la inflación de la curva de Phillips
+STR_CONFIG_SETTING_ISLM_EXPECTED_INFLATION                      :Inflación esperada inicial: {STRING}
+STR_CONFIG_SETTING_ISLM_EXPECTED_INFLATION_HELPTEXT             :Expectativa de inflación al empezar una partida, en porcentaje anual. La misma tasa se aplica a los precios entre 1920 y el año de inicio. Después las expectativas se adaptan a la inflación realizada
+STR_CONFIG_SETTING_ISLM_PHILLIPS_SLOPE                          :Pendiente de la curva de Phillips: {STRING}
+STR_CONFIG_SETTING_ISLM_PHILLIPS_SLOPE_HELPTEXT                 :Porcentaje de la brecha de producto que se suma a la inflación esperada. 50 significa que una expansión del 10 por ciento añade 5 puntos porcentuales de inflación
+STR_CONFIG_SETTING_ISLM_ADAPTATION                              :Adaptación de las expectativas: {STRING}
+STR_CONFIG_SETTING_ISLM_ADAPTATION_HELPTEXT                     :Porcentaje de una sorpresa de inflación que pasa a la inflación esperada a lo largo de un año. Cada mes económico se aplica una doceava parte de esa proporción
+STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION                       :Parte de la inflación que llega al pago de la carga: {STRING}
+STR_CONFIG_SETTING_ISLM_PAYMENT_INFLATION_HELPTEXT              :Porcentaje de la inflación de la curva de Phillips que se aplica a los pagos de la carga. 100 mantiene estables los pagos reales. Menos de 100 hace que los costes suban más deprisa que los ingresos, como en el juego clásico
+STR_CONFIG_SETTING_ISLM_CARGO_LINK                              :Brecha de producto que pasa a la producción: {STRING}
+STR_CONFIG_SETTING_ISLM_CARGO_LINK_HELPTEXT                     :Porcentaje de la brecha de producto que se aplica a la carga de municipios e industrias. 100 hace que una expansión del 10 por ciento eleve la producción un 10 por ciento. El efecto queda limitado entre el 50 y el 200 por ciento de la producción normal. El desempleo es el 5 por ciento menos la mitad de esta brecha
+STR_MACRO_ECONOMY_MENU                                          :Política monetaria y fiscal
+STR_MACRO_ECONOMY_CAPTION                                       :{WHITE}Política monetaria y fiscal
+STR_MACRO_DISABLED                                              :{BLACK}El modelo IS-LM está desactivado. Actívalo en Ajustes, Contabilidad, IS-LM y curva de Phillips.
+STR_MACRO_NO_EQUILIBRIUM                                        :{BLACK}Estos parámetros no producen un equilibrio. Baja la propensión marginal a consumir o sube una sensibilidad al interés.
+STR_MACRO_OUTPUT                                                :{BLACK}Producto {COMMA} (potencial {COMMA}, brecha {STRING})
+STR_MACRO_RATES                                                 :{BLACK}Interés {STRING}, inflación {STRING}, inflación esperada {STRING}
+STR_MACRO_PRICES                                                :{BLACK}Índice de precios {DECIMAL}, dinero real {COMMA}
+STR_MACRO_DEMAND                                                :{BLACK}Consumo {COMMA}, inversión de las empresas {COMMA}, gasto público {COMMA}, impuestos {COMMA}
+STR_MACRO_DEFICIT                                               :{BLACK}Saldo presupuestario G - T: {COMMA}. Actividad de la carga: {DECIMAL}%
+STR_MACRO_INSTRUMENTS                                           :{BLACK}Ahora: G {COMMA}, impuesto {NUM}%, impuesto autónomo {COMMA}, dinero {COMMA}
+STR_MACRO_LABOUR                                                :{BLACK}Población {COMMA}, crecimiento {STRING}, desempleo {STRING}
+STR_MACRO_CAPACITY                                              :{BLACK}Capacidad de carga {COMMA}, inversión de las empresas {COMMA}, capital {COMMA}
+STR_MACRO_DEBT                                                  :{BLACK}Deuda pública {COMMA}, interés de la deuda {COMMA}
+STR_MACRO_HUNDREDTHS                                            :{DECIMAL}%
+STR_MACRO_HUNDREDTHS_NEGATIVE                                   :-{DECIMAL}%
+STR_MACRO_G_DOWN                                                :G -10
+STR_MACRO_G_UP                                                  :G +10
+STR_MACRO_G_TOOLTIP                                             :{BLACK}Cambia el gasto público. Esto desplaza la curva IS
+STR_MACRO_TAX_DOWN                                              :t -1
+STR_MACRO_TAX_UP                                                :t +1
+STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Cambia el tipo impositivo marginal
+STR_MACRO_T0_DOWN                                               :T -10
+STR_MACRO_T0_UP                                                 :T +10
+STR_MACRO_T0_TOOLTIP                                            :{BLACK}Cambia los impuestos autónomos
+STR_MACRO_M_DOWN                                                :M -20
+STR_MACRO_M_UP                                                  :M +20
+STR_MACRO_M_TOOLTIP                                             :{BLACK}Cambia la oferta monetaria nominal. Esto desplaza la curva LM
+STR_MACRO_OPEN_SETTINGS                                         :Todos los parámetros
+STR_MACRO_OPEN_SETTINGS_TOOLTIP                                 :{BLACK}Abre la ventana de ajustes. Ahí se editan todos los coeficientes IS y LM, y la curva de Phillips
+STR_CONFIG_SETTING_ISLM_SUBSIDIES                               :Subsidios: {STRING}
+STR_CONFIG_SETTING_ISLM_SUBSIDIES_HELPTEXT                      :Pagos de subsidios en puntos de producto. Se suman a las compras del Estado, junto con el beneficio extra que el juego paga en las rutas subvencionadas
+STR_MACRO_SUBSIDY_LINE                                          :{BLACK}Subsidios {COMMA}, pagos de rutas subvencionadas el mes pasado {COMMA}
+STR_MACRO_S_DOWN                                                :S -10
+STR_MACRO_S_UP                                                  :S +10
+STR_MACRO_S_TOOLTIP                                             :{BLACK}Cambia los subsidios. El pago forma parte del gasto público
+STR_MACRO_OPEN_DASHBOARD                                        :Panel
+STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Abre el panel macro en tiempo real
+STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Panel macro
+STR_MACRO_EQ_OUTPUT                                             :{BLACK}Producto {COMMA} = consumo {COMMA} + inversión de las empresas {COMMA} + gasto público {COMMA}
+STR_MACRO_EQ_GOVERNMENT                                         :{BLACK}Gasto público {COMMA} = compras {COMMA} + subsidios {COMMA} + subsidios de ruta {COMMA}
+STR_MACRO_EQ_CARGO                                              :{BLACK}La capacidad de carga {COMMA} implica un potencial {COMMA}. Potencial de Phillips {COMMA}
+STR_MACRO_EQ_RATES                                              :{BLACK}Interés {STRING}, inflación {STRING}, desempleo {STRING}
+STR_MACRO_EQ_PUBLIC                                             :{BLACK}Deuda pública {COMMA}. Emitida {COMMA}, recomprada {COMMA}, interés {COMMA}
+STR_MACRO_EQ_PRIVATE                                            :{BLACK}Deuda privada {COMMA}, variación {COMMA}, interés {COMMA}, tope de préstamo {NUM}%
+STR_MACRO_LINK_INVESTMENT                                       :{BLACK}El tipo de interés recorta el tope de los préstamos y encarece lo que las empresas pagan por su deuda, así que bajan la construcción y la compra de vehículos. Ese gasto es la inversión.
+STR_MACRO_LINK_DEBT                                             :{BLACK}Un déficit emite bonos y sube la tasa de interés. Un superávit recompra bonos, baja la tasa y sube el precio de la deuda privada.
+STR_MACRO_LINK_CARGO                                            :{BLACK}La capacidad de carga es la base del producto potencial. La población y el capital acumulado la escalan, y los precios devuelven el producto hacia ese nivel.
+STR_MACRO_LINK_SUBSIDY                                          :{BLACK}Los subsidios, incluido el beneficio extra de las rutas subvencionadas, forman parte del gasto público.
+STR_MACRO_SPEED_1                                               :x1
+STR_MACRO_SPEED_10                                              :x10
+STR_MACRO_SPEED_100                                             :x100
+STR_MACRO_SPEED_TOOLTIP                                         :{BLACK}Ejecuta el juego a este múltiplo de la velocidad normal
+STR_MACRO_OPEN_FLOW_GRAPH                                       :Inflación y deuda
+STR_MACRO_OPEN_FLOW_GRAPH_TOOLTIP                               :{BLACK}Abre la gráfica de inflación y deuda
+STR_MACRO_OPEN_ACTIVITY_GRAPH                                   :Producto
+STR_MACRO_OPEN_ACTIVITY_GRAPH_TOOLTIP                           :{BLACK}Abre la gráfica de producto, potencial, inversión y gasto público
+STR_MACRO_GRAPH_FLOW_CAPTION                                    :{WHITE}Inflación y deuda
+STR_MACRO_GRAPH_FLOW_FOOTER                                     :{TINY_FONT}{BLACK}Azul, inflación (centésimas de punto porcentual); rojo, variación de la deuda pública; verde, variación de la deuda privada
+STR_MACRO_GRAPH_ACTIVITY_CAPTION                                :{WHITE}Producto y gasto público
+STR_MACRO_GRAPH_ACTIVITY_FOOTER                                 :{TINY_FONT}{BLACK}Azul, producto (el mismo del panel); rojo, potencial; verde, inversión; naranja, gasto público; morado, subsidios
+STR_NEWS_MACRO_REPORT                                           :{BIG_FONT}{BLACK}Informe del banco central{}{}Interés {NUM}%, inflación {NUM}% e inflación esperada {NUM}%.
+STR_FINANCES_INTEREST_RATE_MACRO                                :{WHITE}Interés del préstamo: {BLACK}{DECIMAL}%
+STR_CONFIG_SETTING_CARGO_AGING_RATE                             :Escala del ritmo de envejecimiento del pago de la carga: {STRING}
+STR_CONFIG_SETTING_CARGO_AGING_RATE_HELPTEXT                    :Ajusta la rapidez con la que la carga embarcada en un vehículo pierde valor con el tiempo
+STR_CONFIG_SETTING_CARGO_AGING_RATE_VALUE                       :{NUM}%
+STR_CONFIG_SETTING_CARGO_AGING_RATE_ZERO                        :Sin depreciación
+STR_CONFIG_SETTING_SPAWN_PRIMARY_INDUSTRY_ONLY                  :Generar solo industrias primarias: {STRING}
+STR_CONFIG_SETTING_SPAWN_PRIMARY_INDUSTRY_ONLY_HELPTEXT         :Si está activado, solo se generan industrias primarias al crear el mapa y durante la partida.
+STR_CONFIG_SETTING_DEFAULT_RAIL_ROAD_TYPE                       :Tipo de ferrocarril, carretera y tranvía por defecto (tras una partida nueva o al cargar): {STRING}
+STR_CONFIG_SETTING_DEFAULT_RAIL_ROAD_TYPE_HELPTEXT              :Tipo de ferrocarril, carretera y tranvía que se selecciona al empezar o cargar una partida. «El primero disponible» elige el tipo de vía más antiguo, «El último disponible» elige el más reciente y «El más usado» elige el que más se está usando
+STR_CONFIG_SETTING_DEFAULT_RAIL_ROAD_TYPE_FIRST                 :El primero disponible
+STR_CONFIG_SETTING_DEFAULT_RAIL_ROAD_TYPE_LAST                  :El último disponible
+STR_CONFIG_SETTING_DEFAULT_RAIL_ROAD_TYPE_MOST_USED             :El más usado
+STR_CONFIG_SETTING_AIRCRAFT_RANGE                               :Activar el alcance máximo de los aviones: {STRING}
+STR_CONFIG_SETTING_AIRCRAFT_RANGE_HELPTEXT                      :Si está activado, los NewGRF pueden limitar el alcance máximo de los aviones
+STR_PICKER_DEFAULT_COLLECTION                                   :Colección por defecto
+STR_PICKER_ROADSTOP_TRUCK_COLLECTION_TOOLTIP                    :Selecciona una colección de estaciones de camiones para mostrar
+STR_TERRAFORM_TOOLTIP_PLACE_ROUGH_AREAS_ON_LANDSCAPE            :{BLACK}Coloca zonas abruptas en el paisaje.{}Ctrl+clic para quitar las zonas abruptas
+STR_TERRAFORM_TOOLTIP_LOWER_A_CORNER_OF_LAND                    :{BLACK}Baja una esquina o un área de terreno. Si el tamaño es 1x1, clic y arrastrar baja la primera esquina elegida y nivela el área a la nueva altura. Ctrl+clic y arrastrar selecciona el área en diagonal. Mayús muestra solo la estimación del coste
+STR_TERRAFORM_TOOLTIP_RAISE_A_CORNER_OF_LAND                    :{BLACK}Sube una esquina o un área de terreno. Si el tamaño es 1x1, clic y arrastrar sube la primera esquina elegida y nivela el área a la nueva altura. Ctrl+clic y arrastrar selecciona el área en diagonal. Mayús muestra solo la estimación del coste
+STR_INDUSTRY_CARGOES_SOURCES                                    :Orígenes
+STR_INDUSTRY_CARGOES_DESTINATIONS                               :Destinos
+STR_INDUSTRY_CARGOES_ACCEPTS_PRODUCES_TOOLTIP                   :{STRING}{}Acepta: {CARGO_LIST}{}Produce: {CARGO_LIST}
+STR_LAI_WATER_DESCRIPTION_WATER_ROCKS                           :Rocas
+STR_LAI_WATER_DESCRIPTION_COAST_ROCKS                           :Costa o ribera con rocas
+STR_SAVELOAD_NEW_DIRECTORY_BUTTON                               :{BLACK}Nueva carpeta
+STR_SAVELOAD_NEW_DIRECTORY_TOOLTIP                              :{BLACK}Crea una carpeta nueva en la ubicación actual
+STR_SAVELOAD_NEW_DIRECTORY_QUERY_CAPTION                        :{WHITE}Escribe un nombre para la carpeta nueva
+STR_VEHICLE_INFO_RELIABILITY_BREAKDOWNS                         :{BLACK}Fiabilidad: {LTBLUE}{COMMA}% (máx.: {COMMA}%)  {BLACK}Averías desde el último mantenimiento: {LTBLUE}{COMMA}
+STR_VEHICLE_DETAILS_TRAIN_LENGTH                                :{BLACK}Longitud del tren: {LTBLUE}{DECIMAL} casilla{P "" s}
+STR_VEHICLE_DETAILS_TRAIN_CARGO_EMPTY                           :{LTBLUE}Vacío ({CARGO_LONG}){STRING}
+STR_VEHICLE_DETAILS_TRAIN_CARGO_FROM                            :{LTBLUE}{CARGO_LONG} ({CARGO_SHORT}) desde {STATION}{STRING}
+STR_VEHICLE_DETAIL_TAB_TOTALS                                   :{BLACK}Totales
+STR_VEHICLE_DETAILS_TRAIN_TOTALS_TOOLTIP                        :{BLACK}Muestra la carga total, la capacidad y la longitud del tren
+STR_ORDER_CONDITIONAL_DRIVING_BACKWARDS                         :Circula marcha atrás a velocidad reducida
+STR_ORDERS_DELETE_ALL_BUTTON                                    :{BLACK}Eliminar todo
+STR_ERROR_CANNOT_CREATE_DIRECTORY                               :No se puede crear la carpeta...
+STR_ERROR_DIRECTORY_NAME_IN_USE                                 :Ya existe un archivo o una carpeta con ese nombre
+STR_ERROR_DIRECTORY_ILLEGAL_NAME                                :El nombre de la carpeta no puede contener caracteres especiales
+STR_ERROR_DIRECTORY_LEADING_DOT                                 :El nombre de la carpeta no puede empezar por un punto
+STR_ERROR_DIRECTORY_PERMISSION_DENIED                           :No tienes permiso para crear una carpeta aquí
+STR_ERROR_MUST_DEMOLISH_RIVER_FIRST                             :{WHITE}Primero debe demolerse el río
+STR_ERROR_UNABLE_TO_FIND_LOCAL_HANGAR                           :{WHITE}No se puede encontrar el hangar local
+STR_ERROR_BRIDGE_TOO_LOW_FOR_TRAIN_DEPOT                        :{WHITE}El puente es {HEIGHT} demasiado bajo para el depósito de trenes
+STR_ERROR_BRIDGE_TOO_LOW_FOR_ROADVEH_DEPOT                      :{WHITE}El puente es {HEIGHT} demasiado bajo para el depósito de vehículos de carretera
+STR_ERROR_BRIDGE_TOO_LOW_FOR_SHIP_DEPOT                         :{WHITE}El puente es {HEIGHT} demasiado bajo para el depósito de barcos
+STR_ERROR_BRIDGE_TOO_LOW_FOR_OBJECT                             :{WHITE}El puente es {HEIGHT} demasiado bajo para el objeto
+STR_TOOLBAR_ROADTYPE_VELOCITY                                   :{STRING} {YELLOW}({VELOCITY})
+
+# Cadenas ya traducidas en español de España y ausentes en esta variante.
+STR_UNITS_HEIGHT_GAMEUNITS                                      :{DECIMAL}{NBSP}nivel{P "" es}
+STR_BUTTON_MOVE                                                 :{BLACK}Mover
+STR_GRAPH_TOWN_RANGE_PRODUCED                                   :Suministrado
+STR_GRAPH_TOWN_RANGE_TRANSPORTED                                :Transportado
+STR_GAME_OPTIONS_CURRENCY_VND                                   :Dong vietnamita
+STR_CONFIG_SETTING_AVERAGE_HEIGHT                               :Altura promedio: {STRING}
+STR_CONFIG_SETTING_AVERAGE_HEIGHT_HELPTEXT                      :Elige la altura promedio de la tierra. 'Automático' usa la altura promedio según el clima seleccionado: 'Pampa' para Subtropical, 'Normal' para Templado y Tierra de los Juguetes, y 'Meseta' para Subártico.
+STR_CONFIG_SETTING_AVERAGE_HEIGHT_AUTO                          :Automático
+STR_CONFIG_SETTING_AVERAGE_HEIGHT_LOWLANDS                      :Pampa
+STR_CONFIG_SETTING_AVERAGE_HEIGHT_NORMAL                        :Normal
+STR_CONFIG_SETTING_AVERAGE_HEIGHT_PLATEAUS                      :Meseta
+STR_CONFIG_SETTING_TOOLBAR_DROPDOWN_AUTOSELECT                  :Comportamiento tradicional de selección del menú de la barra de herramientas: {STRING}
+STR_CONFIG_SETTING_TOOLBAR_DROPDOWN_AUTOSELECT_HELPTEXT         :Elige el comportamiento de los menús de la barra de herramientas. Si está desactivado, los menús permanecerán abiertos hasta que se realice una selección. Si está activado, los menús se activarán cuando se suelte el botón del ratón.
+STR_CONFIG_SETTING_TOWN_MIN_DISTANCE_HELPTEXT                   :Fija la distancia mínima entre municipios en casillas para la generación de mapas y la fundación aleatoria de municipios
+STR_CONFIG_SETTING_LOCALISATION_UNITS_HEIGHT_GAMEUNITS          :Unidades del juego (niveles)
+STR_NETWORK_CLIENT_LIST_ADMIN_COMPANY_ALLOW_ANY                 :Permitir a cualquier cliente
+STR_NETWORK_CLIENT_LIST_ADMIN_COMPANY_ALLOW_LISTED              :Permitir solo a clientes listados
+STR_PICKER_SELECT_COLLECTION_TOOLTIP                            :Seleccionar una colección
+STR_PICKER_STATION_COLLECTION_TOOLTIP                           :Selecciona una colección de estaciones para mostrar
+STR_PICKER_WAYPOINT_COLLECTION_TOOLTIP                          :Selecciona una colección de puntos de ruta para mostrar
+STR_PICKER_ROADSTOP_BUS_COLLECTION_TOOLTIP                      :Selecciona una colección de estaciones de autobuses para mostrar
+STR_PICKER_OBJECT_COLLECTION_TOOLTIP                            :Selecciona una colección de objetos para mostrar
+STR_PICKER_HOUSE_COLLECTION_TOOLTIP                             :Selecciona una colección de casas para mostrar
+STR_HOUSE_PICKER_PROTECT                                        :Impedir mejoras
+STR_HOUSE_PICKER_REPLACE                                        :Reemplazar existentes
+STR_HOUSE_PICKER_REPLACE_TOOLTIP                                :Selecciona para que se elimine automáticamente un edificio existente en la casilla donde se sitúe este edificio
+STR_SAVELOAD_DELETE_TITLE                                       :{WHITE}Eliminar Archivo
+STR_SAVELOAD_DELETE_WARNING                                     :{YELLOW}¿Estás seguro de que quieres eliminar el archivo?
+STR_MAPGEN_AVERAGE_HEIGHT                                       :{BLACK}Altura promedio:
+STR_MAPGEN_NORTHWEST_TOOLTIP                                    :Alterna entre borde de agua o borde libre en el borde noroeste del mapa
+STR_MAPGEN_NORTHEAST_TOOLTIP                                    :Alterna entre borde de agua o borde libre en el borde noreste del mapa
+STR_MAPGEN_SOUTHEAST_TOOLTIP                                    :Alterna entre borde de agua o borde libre en el borde sureste del mapa
+STR_MAPGEN_SOUTHWEST_TOOLTIP                                    :Alterna entre borde de agua o borde libre en el borde suroeste del mapa
+STR_MAPGEN_BORDER_INFINITE_WATER                                :Agua infinita
+STR_GENERATION_LAND_INDUSTRY_GENERATION                         :{BLACK}Generación de industria terrestre
+STR_GENERATION_WATER_INDUSTRY_GENERATION                        :{BLACK}Generación de industria marítima
+STR_EDIT_SIGN_TEXT_COLOUR_TOOLTIP                               :{BLACK}Color del texto del letrero
+STR_TOWN_DIRECTORY_CITY                                         :{ORANGE}{TOWN}{BLACK} ({COMMA}) {YELLOW}{CITY_ICON}
+STR_TOWN_VIEW_CARGO_GRAPH                                       :Gráfica de Carga
+STR_TOWN_VIEW_CARGO_GRAPH_TOOLTIP                               :Muestra la gráfica del historial de carga del municipio
+STR_STATION_VIEW_EDIT_TOOLTIP                                   :{BLACK}Renombra la estación o mueve el letrero
+STR_STATION_VIEW_EDIT_STATION_SIGN                              :{WHITE}Editar letrero de estación
+STR_WAYPOINT_VIEW_EDIT_TOOLTIP                                  :{BLACK}Renombra el punto de ruta o mueve el letrero
+STR_WAYPOINT_VIEW_EDIT_WAYPOINT_SIGN                            :{WHITE}Editar letrero del punto de ruta
+STR_PURCHASE_INFO_RAILTYPES                                     :{BLACK}Tipo de ferrocarril: {GOLD}{STRING}
+STR_PURCHASE_SORT_DETAILS_COST                                  :{CURRENCY_LONG}
+STR_PURCHASE_SORT_DETAILS_SPEED                                 :{VELOCITY}
+STR_PURCHASE_SORT_DETAILS_POWER                                 :{POWER}
+STR_PURCHASE_SORT_DETAILS_MAX_TE                                :{FORCE}
+STR_PURCHASE_SORT_DETAILS_INTRO_DATE                            :{NUM}
+STR_PURCHASE_SORT_DETAILS_RUNNINGCOST_YEAR                      :{CURRENCY_LONG}/año
+STR_PURCHASE_SORT_DETAILS_RUNNINGCOST_PERIOD                    :{CURRENCY_LONG}/periodo
+STR_PURCHASE_SORT_DETAILS_RELIABILITY                           :{COMMA}%
+STR_PURCHASE_SORT_DETAILS_POWER_VS_RUNNING_COST                 :{DECIMAL}
+STR_PURCHASE_SORT_DETAILS_AIRCRAFT_RANGE                        :{COMMA} casillas
+STR_PURCHASE_SORT_DETAILS_CAPACITY                              :{COMMA}
+STR_ERROR_CAN_T_MOVE_STATION_NAME                               :{WHITE}No se puede mover el letrero de la estación
+STR_ERROR_CAN_T_MOVE_WAYPOINT_NAME                              :{WHITE}No se puede mover el letrero del punto de ruta
+STR_ERROR_BRIDGE_TOO_LOW_FOR_STATION                            :{WHITE}El puente es {HEIGHT} demasiado bajo para la estación
+STR_ERROR_BRIDGE_TOO_LOW_FOR_ROADSTOP                           :{WHITE}El puente es {HEIGHT} demasiado bajo para la estación de carretera
+STR_ERROR_BRIDGE_TOO_LOW_FOR_DOCK                               :{WHITE}El puente es {HEIGHT} demasiado bajo para el muelle
+STR_ERROR_BRIDGE_TOO_LOW_FOR_BUOY                               :{WHITE}El puente es {HEIGHT} demasiado bajo para la boya
+STR_ERROR_BRIDGE_TOO_LOW_FOR_RAIL_WAYPOINT                      :{WHITE}El puente es {HEIGHT} demasiado bajo para el punto de ruta de ferrocarril
+STR_ERROR_BRIDGE_TOO_LOW_FOR_ROAD_WAYPOINT                      :{WHITE}El puente es {HEIGHT} demasiado bajo para el punto de ruta de carretera
+STR_ERROR_BRIDGE_TOO_LOW_FOR_LOCK                               :{WHITE}El puente es {HEIGHT} demasiado bajo para la esclusa
+STR_VIEWPORT_TOWN_CITY                                          :{TOWN} {CITY_ICON}
+STR_VIEWPORT_TOWN_CITY_POP                                      :{TOWN} ({COMMA}) {CITY_ICON}
+
+STR_MACRO_EQ_SPLIT                                               :{BLACK}Producto {COMMA} = juego {COMMA} + impulso exógeno {COMMA}
+STR_GRAPH_MENU_MACRO_MONEY                                       :Precios y dinero
+STR_GRAPH_MENU_MACRO_ISLM                                        :Diagrama IS-LM
+STR_GRAPH_MENU_MACRO_ASAD                                        :Oferta y demanda agregadas
+STR_MACRO_OPEN_MONEY_GRAPH                                       :Precios y dinero
+STR_MACRO_OPEN_MONEY_GRAPH_TOOLTIP                               :{BLACK}Abre la gráfica del índice de precios, la oferta de dinero real y la demanda de dinero
+STR_MACRO_OPEN_ISLM                                              :IS-LM
+STR_MACRO_OPEN_ISLM_TOOLTIP                                      :{BLACK}Abre el diagrama IS-LM. El producto es la misma variable que en el panel
+STR_MACRO_OPEN_ASAD                                              :OA-DA
+STR_MACRO_OPEN_ASAD_TOOLTIP                                      :{BLACK}Abre el diagrama de oferta y demanda agregadas
+STR_MACRO_OPEN_LEDGER                                            :Variables
+STR_MACRO_OPEN_LEDGER_TOOLTIP                                    :{BLACK}Abre cada variable macro, marcada como endógena o exógena
+STR_MACRO_SPEED_MENU_1                                           :Velocidad normal (1x)
+STR_MACRO_SPEED_MENU_10                                          :Rápido (10x)
+STR_MACRO_SPEED_MENU_100                                         :Muy rápido (100x)
+STR_MACRO_ISLM_CAPTION                                           :{WHITE}IS-LM
+STR_MACRO_ISLM_LEGEND                                            :{WHITE}Azul IS, roja LM, naranja el equilibrio
+STR_MACRO_ASAD_CAPTION                                           :{WHITE}Oferta y demanda agregadas
+STR_MACRO_ASAD_LEGEND                                            :{WHITE}Azul demanda, roja oferta de corto plazo, verde potencial, naranja el equilibrio
+STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Variables macro
+STR_MACRO_GRAPH_MONEY_CAPTION                                    :{WHITE}Precios y dinero
+STR_MACRO_GRAPH_MONEY_FOOTER                                     :{TINY_FONT}{BLACK}Azul, índice de precios; rojo, oferta de dinero real; verde, demanda de dinero
+STR_MACRO_VAR_OUTPUT                                             :{BLACK}Producto {COMMA}. Endógena. La suma de las unidades de carga que entregaron las empresas
+STR_MACRO_VAR_GAME                                               :{BLACK}Parte del juego {COMMA}. Endógena. La carga entregada
+STR_MACRO_VAR_EXO                                                :{BLACK}Impulso exógeno {COMMA}. La política mueve la tasa y la inversión. El producto sigue siendo la carga entregada
+STR_MACRO_VAR_C                                                  :{BLACK}Consumo {COMMA}. Endógena. Lo que queda del ingreso que produjo la inversión. Es cero si no hay inversión
+STR_MACRO_VAR_I                                                  :{BLACK}Inversión de las empresas {COMMA}. Endógena. Construcción, vehículos nuevos y gastos operativos de infraestructura. Ese gasto produce el ingreso de las empresas
+STR_MACRO_VAR_G                                                  :{BLACK}Gasto público {COMMA}. Las compras y el subsidio son exógenos. Los pagos de ruta salen del juego
+STR_MACRO_VAR_YSTAR                                              :{BLACK}Potencial {COMMA}. Endógena. Capacidad de carga, población y capital de las empresas
+STR_MACRO_VAR_P                                                  :{BLACK}Índice de precios {COMMA}. Endógena. Lo mueve la curva de Phillips
+STR_MACRO_VAR_M                                                  :{BLACK}Dinero nominal {COMMA}. Exógena. Se cambia en la ventana de política
+STR_MACRO_VAR_RM                                                 :{BLACK}Oferta de dinero real {COMMA}. Endógena. Dinero nominal dividido por el índice de precios
+STR_MACRO_VAR_MD                                                 :{BLACK}Demanda de dinero {COMMA}. Endógena. Crece con el producto
+STR_MACRO_VAR_T                                                  :{BLACK}Recaudación {COMMA}. El tipo y el impuesto autónomo son exógenos. La recaudación sigue al producto
+STR_MACRO_VAR_POP                                                :{BLACK}Población {COMMA}. Endógena
+STR_MACRO_VAR_CARGO                                              :{BLACK}Capacidad de carga {COMMA}. Endógena. Es la base del producto potencial
+STR_MACRO_VAR_GSET                                               :{BLACK}Compras del Estado {COMMA}. Exógena
+STR_MACRO_VAR_SSET                                               :{BLACK}Subsidio fijado {COMMA}. Exógena. Subirlo hace más rentables las rutas subvencionadas y las empresas compiten por ellas
+STR_MACRO_VAR_TAX                                                :{BLACK}Tipo impositivo marginal {NUM}%. Exógeno
+STR_MACRO_VAR_T0                                                 :{BLACK}Impuesto autónomo {COMMA}. Exógeno
+STR_MACRO_VAR_C0                                                 :{BLACK}Consumo autónomo {COMMA}. Exógeno
+STR_MACRO_VAR_R                                                  :{BLACK}Interés {DECIMAL}%. Endógeno. Donde la LM cruza la IS
+STR_MACRO_VAR_R_NEG                                              :{BLACK}Interés -{DECIMAL}%. Endógeno. Donde la LM cruza la IS
+STR_MACRO_VAR_PI                                                 :{BLACK}Inflación {DECIMAL}%. Endógena. La curva de Phillips
+STR_MACRO_VAR_PI_NEG                                             :{BLACK}Inflación -{DECIMAL}%. Endógena. La curva de Phillips
+STR_MACRO_VAR_U                                                  :{BLACK}Desempleo {DECIMAL}%. Endógeno. Cinco por ciento menos la mitad de la brecha de producto
+
+STR_MACRO_SPEED_1000                                            :x1000
+STR_MACRO_SPEED_MENU_1000                                       :Máximo (1000x)
+STR_MACRO_VAR_DEBT_PRICE                                        :{BLACK}Precio de la deuda privada {COMMA}. Endógena. Sube cuando un superávit del gobierno baja la tasa de interés

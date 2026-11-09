@@ -288,7 +288,7 @@ struct GUISettings {
 	bool show_cargo_in_vehicle_lists; ///< Show the cargoes the vehicles can carry in the list windows
 	bool auto_remove_signals; ///< automatically remove signals when in the way during rail construction
 	uint16_t refresh_rate; ///< How often we refresh the screen (time between draw-ticks).
-	uint16_t fast_forward_speed_limit; ///< Game speed to use when fast-forward is enabled.
+	uint32_t fast_forward_speed_limit; ///< Game speed to use when fast-forward is enabled. 100 is 1x, 100000 is 1000x.
 
 	uint16_t console_backlog_timeout; ///< the minimum amount of time items should be in the console backlog before they will be removed in ~3 seconds granularity.
 	uint16_t console_backlog_length; ///< the minimum amount of items in the console backlog before items will be removed.
@@ -657,7 +657,8 @@ struct EconomySettings {
 	uint8_t islm_mpc_percent; ///< marginal propensity to consume, percent
 	uint16_t islm_autonomous_investment; ///< autonomous investment I0, at a zero interest rate
 	uint16_t islm_investment_sensitivity; ///< investment fall per percentage point of interest
-	uint16_t islm_government_spending; ///< fiscal instrument: government spending G
+	uint16_t islm_government_spending; ///< fiscal instrument: government purchases G
+	uint16_t islm_subsidies; ///< fiscal instrument: subsidies, added to government spending
 	uint16_t islm_autonomous_tax; ///< fiscal instrument: autonomous tax T0
 	uint8_t islm_tax_rate_percent; ///< fiscal instrument: marginal tax rate, percent
 	uint16_t islm_money_supply; ///< monetary instrument: nominal money supply M

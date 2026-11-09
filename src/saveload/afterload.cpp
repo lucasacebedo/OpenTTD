@@ -3453,6 +3453,59 @@ bool AfterLoadGame()
 		_economy.macro_ok = 0;
 	}
 
+	if (IsSavegameVersionBefore(SaveLoadVersion::MacroDynamics)) {
+		/* The living potential output starts at the baseline. Population and
+		 * cargo capacity are anchored the first time the model looks at the map,
+		 * so an old save does not jump. Spending already on the books is not
+		 * treated as a new month of investment. */
+		_economy.macro_natural_output = _settings_game.economy.islm_enabled ? std::max<int32_t>(_settings_game.economy.islm_natural_output, 1) : 0;
+		_economy.macro_unemployment_bp = 0;
+		_economy.macro_population_growth_bp = 0;
+		_economy.macro_company_investment = 0;
+		_economy.macro_debt_service = 0;
+		_economy.macro_lagged_inflation_bp = 0;
+		_economy.macro_debt = 0;
+		_economy.macro_capital = 0;
+		_economy.macro_population = 0;
+		_economy.macro_population_snapshot = 0;
+		_economy.macro_population_base = 0;
+		_economy.macro_cargo_capacity = 0;
+		_economy.macro_cargo_capacity_base = 0;
+		int64_t spent = 0;
+		for (const Company *company : Company::Iterate()) {
+			spent -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::Construction]);
+			spent -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::NewVehicles]);
+		}
+		_economy.macro_company_spent_year = std::max<int64_t>(spent, 0);
+	}
+
+	if (IsSavegameVersionBefore(SaveLoadVersion::MacroLab)) {
+		_economy.macro_cargo_potential = 0;
+		_economy.macro_government = 0;
+		_economy.macro_subsidy_game = 0;
+		_economy.macro_bond_issue = 0;
+		_economy.macro_bond_buyback = 0;
+		_economy.macro_private_debt_delta = 0;
+		_economy.macro_private_interest = 0;
+		_economy.macro_private_debt = 0;
+		_economy.macro_subsidy_pounds = 0;
+		_economy.macro_bond_count = 0;
+		_economy.macro_history_count = 0;
+		_economy.macro_history.fill(0);
+		_economy.macro_bond_amount.fill(0);
+		_economy.macro_bond_coupon.fill(0);
+	}
+
+	if (IsSavegameVersionBefore(SaveLoadVersion::MacroAccounts)) {
+		_economy.macro_game_output = 0;
+		_economy.macro_exogenous_output = 0;
+		_economy.macro_money_demand = 0;
+		_economy.macro_demand_anchor = 0;
+		_economy.macro_game_anchor = 0;
+		_economy.macro_anchor_set = 0;
+		_economy.macro_history_prices.fill(0);
+	}
+
 	AfterLoadLinkGraphs();
 
 	CheckGroundVehiclesAtCorrectZ();

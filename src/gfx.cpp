@@ -37,7 +37,7 @@ DirectionKeys _dirkeys; ///< Pressed direction keys.
 bool _fullscreen;
 Support8bpp _support8bpp; ///< State of the support for 8bpp graphics.
 CursorVars _cursor;
-uint16_t _game_speed = 100; ///< Current game-speed; 100 is 1x, 0 is infinite.
+uint32_t _game_speed = 100; ///< Current game-speed; 100 is 1x, 100000 is 1000x, 0 is infinite.
 DrawPixelInfo _screen;
 bool _screen_disable_anim = false;   ///< Disable palette animation (important for 32bpp-anim blitter during giant screenshot)
 std::atomic<bool> _exit_game;

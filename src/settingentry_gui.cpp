@@ -723,6 +723,7 @@ SettingsContainer &GetSettingsTree()
 			{
 				macro->Add(new SettingEntry("economy.islm_enabled"));
 				macro->Add(new SettingEntry("economy.islm_government_spending"));
+				macro->Add(new SettingEntry("economy.islm_subsidies"));
 				macro->Add(new SettingEntry("economy.islm_tax_rate_percent"));
 				macro->Add(new SettingEntry("economy.islm_autonomous_tax"));
 				macro->Add(new SettingEntry("economy.islm_money_supply"));

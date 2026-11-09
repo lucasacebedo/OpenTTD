@@ -51,7 +51,7 @@ extern DirectionKeys _dirkeys;
 extern bool _fullscreen;
 extern Support8bpp _support8bpp;
 extern CursorVars _cursor;
-extern uint16_t _game_speed;
+extern uint32_t _game_speed;
 
 extern DrawPixelInfo _screen;
 extern bool _screen_disable_anim;   ///< Disable palette animation (important for 32bpp-anim blitter during giant screenshot)

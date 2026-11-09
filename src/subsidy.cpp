@@ -28,6 +28,7 @@
 #include "script/api/script_event_types.hpp"
 #include "timer/timer.h"
 #include "timer/timer_game_economy.h"
+#include "settings_type.h"
 
 #include "table/strings.h"
 
@@ -241,7 +242,17 @@ bool FindSubsidyPassengerRoute()
 	uint32_t r = RandomRange(static_cast<uint>(CargoSpec::town_production_cargoes[TownProductionEffect::Passengers].size()));
 	CargoType cargo_type = CargoSpec::town_production_cargoes[TownProductionEffect::Passengers][r]->Index();
 
-	const Town *src = Town::GetRandom();
+	const Town *src = nullptr;
+	for (int attempt = 0; attempt < 12; attempt++) {
+		const Town *candidate = Town::GetRandom();
+		if (candidate == nullptr) continue;
+		if (src == nullptr) src = candidate;
+		if (candidate->flags.Test(TownFlag::IsGrowing)) {
+			src = candidate;
+			break;
+		}
+	}
+	if (src == nullptr) return false;
 	if (src->cache.population < SUBSIDY_PAX_MIN_POPULATION ||
 			src->GetPercentTransported(cargo_type) > SUBSIDY_MAX_PCT_TRANSPORTED) {
 		return false;
@@ -321,8 +332,13 @@ bool FindSubsidyIndustryCargoRoute()
 {
 	if (!Subsidy::CanAllocateItem()) return false;
 
-	/* Select a random industry. */
-	const Industry *src_ind = Industry::GetRandom();
+	/* Prefer an industry that is already producing more than it did when it opened. */
+	const Industry *src_ind = nullptr;
+	for (int attempt = 0; attempt < 12; attempt++) {
+		const Industry *candidate = Industry::GetRandom();
+		if (candidate == nullptr) continue;
+		if (src_ind == nullptr || candidate->prod_level > src_ind->prod_level) src_ind = candidate;
+	}
 	if (src_ind == nullptr) return false;
 
 	uint trans, total;
@@ -475,6 +491,11 @@ static const IntervalTimer<TimerGameEconomy> _economy_subsidies_monthly({TimerGa
 		do {
 			industry_subsidy = FindSubsidyIndustryCargoRoute();
 		} while (!industry_subsidy && n--);
+	}
+
+	/* With the subsidy instrument on, offer another route every month so companies have something to contest. */
+	if (_settings_game.economy.islm_enabled && _settings_game.economy.islm_subsidies > 0 && !passenger_subsidy) {
+		passenger_subsidy = FindSubsidyPassengerRoute();
 	}
 
 	modified |= passenger_subsidy || town_subsidy || industry_subsidy;

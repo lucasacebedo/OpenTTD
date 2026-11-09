@@ -109,8 +109,14 @@ void Company::PostDestructor(size_t index)
  */
 Money Company::GetMaxLoan() const
 {
-	if (this->max_loan == COMPANY_MAX_LOAN_DEFAULT) return _economy.max_loan;
-	return this->max_loan;
+	Money base = this->max_loan == COMPANY_MAX_LOAN_DEFAULT ? _economy.max_loan : this->max_loan;
+	if (!_settings_game.economy.islm_enabled || _economy.macro_ok == 0) return base;
+
+	/* Five extra points of interest cut the room for new borrowing by about a sixth. Existing loans are not called in. */
+	const int rate = std::max<int>(_economy.macro_interest_bp, 0) / 100;
+	int64_t ceiling = static_cast<int64_t>(base) * 100 / (100 + 4 * rate);
+	if (ceiling < static_cast<int64_t>(this->current_loan)) ceiling = static_cast<int64_t>(this->current_loan);
+	return static_cast<Money>(ceiling);
 }
 
 /**
