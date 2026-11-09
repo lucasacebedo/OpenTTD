@@ -45,6 +45,7 @@ enum MacroDashboardWidgets : WidgetID {
 /** Widgets of the IS-LM diagram, the AS-AD diagram and the variable ledger. */
 enum MacroDiagramWidgets : WidgetID {
 	WID_MDIAG_PANEL,
+	WID_MDIAG_SCROLL,
 };
 
 #endif /* WIDGETS_MACRO_ECONOMY_WIDGET_H */

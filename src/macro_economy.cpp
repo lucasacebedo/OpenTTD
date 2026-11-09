@@ -543,6 +543,18 @@ static void RecalculateMacroEconomy(bool advance_prices)
 	const EconomyLabAccounts accounts = EconomyLabCloseMonth(lab_flows, advance_prices);
 	if (advance_prices) _economy.macro_subsidy_pounds = 0;
 	if (accounts.reset_legacy_capital) _economy.macro_capital = 0;
+	if (accounts.recalibrate) {
+		const int32_t restart = _settings_game.economy.islm_initial_expected_inflation * 100;
+		_economy.macro_expected_inflation_bp = restart;
+		_economy.macro_inflation_bp = restart;
+		const int64_t initial = std::max<int32_t>(_settings_game.economy.islm_initial_price_index, 100);
+		_economy.macro_price_index = ClampI32(initial * MACRO_PRICE_SCALE, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
+		_economy.macro_bond_count = 0;
+		_economy.macro_bond_amount.fill(0);
+		_economy.macro_bond_coupon.fill(0);
+		_economy.macro_debt = 0;
+		_economy.macro_debt_service = 0;
+	}
 
 	const int64_t debt_before = _economy.macro_debt;
 	const IsLmResult result = PublishAccounts(accounts, _economy.macro_price_index);
@@ -560,6 +572,12 @@ static void RecalculateMacroEconomy(bool advance_prices)
 	if (result.ok && advance_prices) {
 		AdvancePhillipsCurve(inflation_bp);
 		UpdatePublicDebt(result, _economy.macro_government);
+		int64_t loans = 0;
+		for (const Company *company : Company::Iterate()) loans += static_cast<int64_t>(company->current_loan);
+		const EconomyLabOpen open = EconomyLabApplyOpenEconomy(accounts, result.interest_bp, _economy.macro_price_index, _economy.macro_debt, loans, _economy.macro_population, result.unemployment_bp);
+		_economy.macro_exogenous_output = ClampI32(open.discrepancy, -2000000000, 2000000000);
+		const int charged = std::clamp(open.loan_rate_bp / 100, 0, 255);
+		_economy.interest_rate = static_cast<uint8_t>(charged);
 		RecordHistory(ClampI32(_economy.macro_debt - debt_before, -10000000, 10000000));
 	}
 	PublishMacroState();
@@ -774,4 +792,56 @@ const char *MacroSeriesName(int series)
 	};
 	if (series < 0 || series >= static_cast<int>(std::size(names))) return "";
 	return names[series];
+}
+
+int FillMacroMonitor(MacroMonitorRow *rows, int capacity)
+{
+	if (rows == nullptr || capacity <= 0) return 0;
+	const EconomyLabOpen &open = EconomyLabOpenState();
+	const EconomySettings &cfg = _settings_game.economy;
+	const MacroMonitorRow table[] = {
+		{"PIB producción", "libras de 1920 · flujo · mes · E-006 · valor agregado del transporte", _economy.macro_output, 0},
+		{"PIB potencial", "libras de 1920 · stock · mes · E-027 · calibrado una vez", _economy.macro_natural_output, 0},
+		{"Brecha", "tasa · stock · mes · (Y-Y*)/Y* · cuentas", _economy.macro_output_gap_bp, 1},
+		{"Discrepancia", "libras de 1920 · flujo · mes · E-008 · producción menos gasto", _economy.macro_exogenous_output, 0},
+		{"Consumo", "libras de 1920 · flujo · mes · E-007 · pasajeros y correo", _economy.macro_consumption, 0},
+		{"Inversión", "libras de 1920 · flujo · mes · E-007 · construcción y vehículos", _economy.macro_investment, 0},
+		{"Compras públicas", "libras de 1920 · flujo · mes · E-007 · 1000 puntos = PIB calibrado", _economy.macro_government, 0},
+		{"Impuestos", "libras de 1920 · flujo · mes · E-030 · tipo y impuesto autónomo", _economy.macro_tax_revenue, 0},
+		{"Subsidios", "libras de 1920 · flujo · mes · E-006 · transferencia, no es consumo público", _economy.macro_subsidy_game, 0},
+		{"Exportaciones", "libras de 1920 · flujo · mes · E-044 · tipo de cambio real", open.exports, 0},
+		{"Importaciones", "libras de 1920 · flujo · mes · E-045 · actividad y tipo de cambio", open.imports, 0},
+		{"Volumen físico", "piezas · flujo · mes · sin ecuación de valor · no es PIB", _economy.macro_game_output, 0},
+		{"Tasa de política", "tasa anual · stock · mes · E-032 · Taylor", _economy.macro_interest_bp, 1},
+		{"Tasa de préstamo", "tasa anual · stock · mes · E-038 · política más prima", open.loan_rate_bp, 1},
+		{"Tasa mundial", "tasa anual · exógena · mes · E-051 · 2%", open.world_rate_bp, 1},
+		{"Prima de riesgo", "tasa anual · stock · mes · E-049 · deuda sobre PIB", open.risk_bp, 1},
+		{"Inflación", "tasa anual · flujo · mes · Phillips · brecha y expectativas", _economy.macro_inflation_bp, 1},
+		{"Inflación esperada", "tasa anual · stock · mes · expectativas adaptativas", _economy.macro_expected_inflation_bp, 1},
+		{"Desempleo", "tasa · stock · mes · puente de Okun hasta E-022", _economy.macro_unemployment_bp, 1},
+		{"Población", "personas · stock · mes · pueblos", _economy.macro_population, 0},
+		{"Fuerza de trabajo", "personas · stock · mes · E-020 · 45% de la población", open.labour_force, 0},
+		{"Empleo", "personas · stock · mes · E-022 · fuerza por uno menos desempleo", open.employment, 0},
+		{"Tipo de cambio", "índice · stock · mes · E-053 · 100 es el inicio", open.exchange_pm, 2},
+		{"Cambio fundamental", "índice · stock · mes · E-052 · paridad de largo plazo", open.fundamental_pm, 2},
+		{"Overshooting", "indicador · stock · mes · E-053 · 1 si el spot supera al fundamental", open.overshooting ? 1 : 0, 0},
+		{"Deuda pública", "libras de 1920 · stock · mes · E-031 · bonos del Tesoro", _economy.macro_debt, 0},
+		{"Interés de la deuda", "libras de 1920 · flujo · mes · cupón pactado", _economy.macro_debt_service, 0},
+		{"Préstamos bancarios", "libras de 1920 · stock · mes · E-035 · deuda de las compañías", open.bank_loans, 0},
+		{"Depósitos", "libras de 1920 · stock · mes · E-034 · ahorro acumulado", open.bank_deposits, 0},
+		{"Reservas bancarias", "libras de 1920 · stock · mes · E-033 · 10% de los depósitos", open.bank_reserves, 0},
+		{"Bonos en bancos", "libras de 1920 · stock · mes · E-035 · tenencia del Tesoro", open.bank_bonds, 0},
+		{"Capital bancario", "libras de 1920 · stock · mes · E-035 · activo menos depósitos", open.bank_equity, 0},
+		{"Hueco bancario", "libras de 1920 · stock · mes · E-035 · debe ser cero", open.bank_gap, 0},
+		{"Índice de precios", "índice · stock · mes · Phillips · 1000 es la base", _economy.macro_price_index / 100, 0},
+		{"Dinero nominal", "puntos de política · exógeno · mes · aún no es la base monetaria", cfg.islm_money_supply, 0},
+		{"Capacidad de carga", "plazas · stock · mes · vehículos · no es PIB", _economy.macro_cargo_capacity, 0},
+		{"Capital", "libras de 1920 · stock · mes · E-018 · formación menos depreciación", _economy.macro_capital, 0},
+		{"Fidelidad", "indicador · stock · corrida · F0 mide el juego · F2 no promete 100000x", 0, 0},
+		{"Decisor", "indicador · stock · mes · regla determinista · el LLM no corre en el tick", 0, 0},
+	};
+	const int available = static_cast<int>(std::size(table));
+	const int count = std::min(available, capacity);
+	for (int i = 0; i < count; i++) rows[i] = table[i];
+	return count;
 }

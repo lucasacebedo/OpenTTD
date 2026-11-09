@@ -6189,8 +6189,8 @@ STR_MACRO_OPEN_ISLM                                              :IS-LM
 STR_MACRO_OPEN_ISLM_TOOLTIP                                      :{BLACK}Abre el diagrama IS-LM. El producto es la misma variable que en el panel
 STR_MACRO_OPEN_ASAD                                              :OA-DA
 STR_MACRO_OPEN_ASAD_TOOLTIP                                      :{BLACK}Abre el diagrama de oferta y demanda agregadas
-STR_MACRO_OPEN_LEDGER                                            :Variables
-STR_MACRO_OPEN_LEDGER_TOOLTIP                                    :{BLACK}Abre cada variable macro, marcada como endógena o exógena
+STR_MACRO_OPEN_LEDGER                                            :Seguimiento
+STR_MACRO_OPEN_LEDGER_TOOLTIP                                    :{BLACK}Abre la tabla de seguimiento: valor, unidad, stock o flujo, frecuencia, ecuación y fuente
 STR_MACRO_SPEED_MENU_1                                           :Velocidad normal (1x)
 STR_MACRO_SPEED_MENU_10                                          :Rápido (10x)
 STR_MACRO_SPEED_MENU_100                                         :Muy rápido (100x)
@@ -6198,7 +6198,7 @@ STR_MACRO_ISLM_CAPTION                                           :{WHITE}IS-LM
 STR_MACRO_ISLM_LEGEND                                            :{WHITE}Azul IS, roja LM, naranja el equilibrio
 STR_MACRO_ASAD_CAPTION                                           :{WHITE}Oferta y demanda agregadas
 STR_MACRO_ASAD_LEGEND                                            :{WHITE}Azul demanda, roja oferta de corto plazo, verde potencial, naranja el equilibrio
-STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Variables macro
+STR_MACRO_LEDGER_CAPTION                                         :{WHITE}Seguimiento de la economía
 STR_MACRO_GRAPH_MONEY_CAPTION                                    :{WHITE}Precios y dinero
 STR_MACRO_GRAPH_MONEY_FOOTER                                     :{TINY_FONT}{BLACK}Azul, índice de precios; rojo, oferta de dinero real; verde, demanda de dinero
 STR_MACRO_VAR_OUTPUT                                             :{BLACK}PIB {COMMA}. Endógena. Valor agregado del transporte, en libras de 1920, menos los subsidios de ruta
@@ -6206,7 +6206,7 @@ STR_MACRO_VAR_GAME                                               :{BLACK}Volumen
 STR_MACRO_VAR_EXO                                                :{BLACK}Discrepancia {COMMA}. PIB por producción menos PIB por gasto. No se esconde dentro del consumo
 STR_MACRO_VAR_C                                                  :{BLACK}Consumo {COMMA}. Endógena. Tarifas de pasajeros y correo, en libras de 1920
 STR_MACRO_VAR_I                                                  :{BLACK}Inversión {COMMA}. Endógena. Solo construcción y vehículos nuevos. El mantenimiento es un consumo intermedio
-STR_MACRO_VAR_G                                                  :{BLACK}Compras públicas {COMMA}. Exógenas. El deslizador de compras, a 1.000 libras de 1920 por punto
+STR_MACRO_VAR_G                                                  :{BLACK}Compras públicas {COMMA}. Exógenas. 1.000 puntos del deslizador equivalen al producto calibrado
 STR_MACRO_VAR_YSTAR                                              :{BLACK}Potencial {COMMA}. Endógena. Se calibra una vez; después lo mueven la población, el capital y la capacidad de carga
 STR_MACRO_VAR_P                                                  :{BLACK}Índice de precios {COMMA}. Endógena. Lo mueve la curva de Phillips
 STR_MACRO_VAR_M                                                  :{BLACK}Dinero nominal {COMMA}. Exógena. Se cambia en la ventana de política

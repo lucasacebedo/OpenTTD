@@ -15,7 +15,7 @@ E-006:
 
 E-007:
   text: "GDP_expenditure = consumption + investment + government + X - M"
-  note: "X and M are zero until the external sector. Consumption is passenger and mail tariffs. Investment is construction and new vehicles. Government is the purchase slider."
+  note: "Consumption is passenger and mail tariffs. Investment is construction and new vehicles. Government is the purchase slider: 1000 points equal calibrated GDP. X and M come from the real exchange rate."
 
 E-008:
   text: "discrepancy = GDP_production - GDP_expenditure"
@@ -27,7 +27,18 @@ E-027:
 
 E-032:
   text: "i = r* + pi_target + 1.50*(pi - pi_target) + 0.50*gap"
-  note: "r* and pi_target are 2 percent. The exchange-rate term waits for the external sector. The stored rate is clamped to 0..25 percent."
+  note: "r* and pi_target are 2 percent. The stored policy rate is clamped to 0..25 percent. The loan rate adds the risk premium."
+
+E-044:
+  text: "X = trade_base * real_exchange / 10000"
+  note: "trade_base is one tenth of calibrated GDP. The real exchange rate is spot times the foreign price over the domestic price, with 10000 = 1."
+
+E-045:
+  text: "M = trade_base * (GDP / potential) * 10000 / real_exchange"
+
+E-053:
+  text: "spot = fundamental * (1 - 2*(i - i* - rho))"
+  note: "i* is 2 percent. rho is 1 percent plus debt/GDP. A higher policy rate appreciates the currency. The fundamental crawls one twenty-fourth toward purchasing-power parity."
 
 bridge_unemployment:
   text: "u = 5% - gap/2"

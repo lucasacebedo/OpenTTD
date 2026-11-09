@@ -79,4 +79,15 @@ int32_t MacroOutputAtPrice(int32_t price_index);
 /** Price index on the short-run aggregate-supply curve at an output level. */
 int32_t MacroPriceAtOutput(int32_t output);
 
+/** One line of the monitoring table. format 0 is an integer, 1 is a rate in hundredths of a percent, 2 is an index with 10000 = 100. */
+struct MacroMonitorRow {
+	const char *label;
+	const char *detail;
+	int64_t value;
+	uint8_t format;
+};
+
+/** Fill the monitoring table. Returns the number of rows written. */
+int FillMacroMonitor(MacroMonitorRow *rows, int capacity);
+
 #endif /* MACRO_ECONOMY_H */

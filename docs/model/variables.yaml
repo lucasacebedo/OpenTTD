@@ -1,8 +1,9 @@
-# Public variables of the economy lab, conversion version 1.
+# Public variables of the economy lab, conversion version 2.
 # A cargo piece, a current pound, a 1920 pound and a policy point are different units.
+# 1000 policy points equal the calibrated real GDP, or this month's transport sales before calibration.
 
-conversion_version: 1
-policy_point_to_real_pounds: 1000
+conversion_version: 2
+policy_points_per_calibrated_gdp: 1000
 payment_index_base: 65536
 
 variables:
@@ -46,7 +47,7 @@ variables:
     unit: real_pounds
     kind: flow
     frequency: month
-    source: economy.islm_government_spending times policy_point_to_real_pounds
+    source: economy.islm_government_spending times calibrated GDP divided by 1000
     equation: E-007
     code: _economy.macro_government
   - id: subsidies

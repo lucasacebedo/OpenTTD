@@ -29,7 +29,22 @@ struct EconomyLabPersistent {
 	int64_t potential_base = 0; ///< Real pounds of GDP at the calibration month.
 	int64_t population_base = 0;
 	int64_t capacity_base = 0;
-	int64_t capital_base = 0;
+	int64_t capital_base = 0; ///< Zero until the stock is positive. A base of 1 would explode E-027.
+	int64_t price_base = 0; ///< Macro price index at calibration. PPP uses it.
+	int64_t exchange_pm = 10000; ///< Domestic currency per foreign unit. 10000 is the fundamental at the start.
+	int64_t fundamental_pm = 10000;
+	int64_t exports = 0;
+	int64_t imports = 0;
+	int32_t world_rate_bp = 200;
+	int32_t risk_bp = 100;
+	int32_t loan_rate_bp = 0;
+	int64_t bank_loans = 0;
+	int64_t bank_deposits = 0;
+	int64_t bank_reserves = 0;
+	int64_t bank_bonds = 0;
+	int64_t bank_equity = 0;
+	int64_t employment = 0;
+	int64_t labour_force = 0;
 	std::array<int64_t, 64> delivered{}; ///< Physical units by cargo type. Never added into GDP.
 };
 
@@ -62,7 +77,29 @@ struct EconomyLabAccounts {
 	int64_t potential = 0; ///< Integer form of E-027.
 	int64_t logistics_pieces = 0; ///< Sum of physical units. Not GDP.
 	bool reset_legacy_capital = false;
+	bool recalibrate = false; ///< Schema 1 used a pound scale and a capital base that do not match GDP.
 	bool ledger_balanced = false;
+};
+
+/** Open-economy and bank balances published with the monthly accounts. Equity closes the bank identity. */
+struct EconomyLabOpen {
+	int64_t exports = 0;
+	int64_t imports = 0;
+	int64_t exchange_pm = 10000;
+	int64_t fundamental_pm = 10000;
+	int32_t world_rate_bp = 200;
+	int32_t risk_bp = 100;
+	int32_t loan_rate_bp = 0;
+	int64_t bank_loans = 0;
+	int64_t bank_deposits = 0;
+	int64_t bank_reserves = 0;
+	int64_t bank_bonds = 0;
+	int64_t bank_equity = 0;
+	int64_t bank_gap = 0;
+	int64_t employment = 0;
+	int64_t labour_force = 0;
+	int64_t discrepancy = 0;
+	bool overshooting = false;
 };
 
 EconomyLabPersistent &EconomyLabPersistentState();
@@ -79,5 +116,13 @@ void EconomyLabNoteSubsidy(int64_t pounds);
  * @param commit Clear the open flows and, on the first positive GDP, fix the potential base.
  */
 EconomyLabAccounts EconomyLabCloseMonth(const EconomyLabFlows &flows, bool commit);
+
+/**
+ * E-043 to E-053 and the bank balance, after the policy rate is known.
+ * Exports and imports enter the expenditure identity. Bank equity is the residual that makes assets equal liabilities.
+ */
+EconomyLabOpen EconomyLabApplyOpenEconomy(const EconomyLabAccounts &accounts, int32_t policy_rate_bp, int64_t price_index, int64_t public_debt, int64_t loan_pounds, int64_t population, int32_t unemployment_bp);
+
+const EconomyLabOpen &EconomyLabOpenState();
 
 #endif /* ECONOMYLAB_ACCOUNTS_H */

@@ -425,59 +425,84 @@ void ShowMacroAsAdDiagram()
 	AllocateWindowDescFront<MacroAsAdWindow>(_macro_asad_desc, 0);
 }
 
+static void AppendDigits(std::string &text, int64_t value, bool grouped)
+{
+	char digits[24];
+	int count = 0;
+	do {
+		digits[count++] = static_cast<char>('0' + static_cast<int>(value % 10));
+		value /= 10;
+	} while (value > 0 && count < static_cast<int>(std::size(digits)));
+	for (int i = count - 1; i >= 0; i--) {
+		if (grouped && i != count - 1 && (i + 1) % 3 == 0) text += '.';
+		text += digits[i];
+	}
+}
+
+static std::string FormatMonitorValue(int64_t value, uint8_t format)
+{
+	std::string text;
+	if (value < 0) {
+		text += '-';
+		value = -value;
+	}
+	if (format == 1 || format == 2) {
+		AppendDigits(text, value / 100, false);
+		text += ',';
+		const int64_t frac = value % 100;
+		text += static_cast<char>('0' + static_cast<int>(frac / 10));
+		text += static_cast<char>('0' + static_cast<int>(frac % 10));
+		if (format == 1) text += '%';
+		return text;
+	}
+	AppendDigits(text, value, true);
+	return text;
+}
+
 struct MacroLedgerWindow : Window {
 	MacroLedgerWindow(WindowDesc &desc, WindowNumber number) : Window(desc)
 	{
 		this->InitNested(number);
+		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCount(48);
 	}
 
 	const IntervalTimer<TimerGameEconomy> daily_refresh{{TimerGameEconomy::Trigger::Day, TimerGameEconomy::Priority::None}, [this](auto) {
-		RefreshMacroEconomy();
+		this->SetDirty();
 	}};
+
+	void OnResize() override
+	{
+		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCapacityFromWidget(this, WID_MDIAG_PANEL, WidgetDimensions::scaled.framerect.Vertical());
+	}
+
+	void OnPaint() override
+	{
+		MacroMonitorRow rows[48];
+		const int count = FillMacroMonitor(rows, 48);
+		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCount(count * 2);
+		this->DrawWidgets();
+	}
 
 	void DrawWidget(const Rect &r, WidgetID widget) const override
 	{
 		if (widget != WID_MDIAG_PANEL) return;
-		const EconomySettings &cfg = _settings_game.economy;
-		Rect tr = r.Shrink(WidgetDimensions::scaled.framerect);
+		MacroMonitorRow rows[48];
+		const int count = FillMacroMonitor(rows, 48);
+		const Rect tr = r.Shrink(WidgetDimensions::scaled.framerect);
 		const int line = GetCharacterHeight(FontSize::Small);
+		const int lines = std::max(1, (tr.bottom - tr.top) / line);
+		const int first = static_cast<int>(this->GetScrollbar(WID_MDIAG_SCROLL)->GetPosition());
 		int y = tr.top;
-		auto row = [&](StringID id, auto... args) {
-			if (y + line <= tr.bottom) DrawString(tr.left, tr.right, y, GetString(id, args...), TextColour::Black, AlignmentH::Start, false, FontSize::Small);
+		for (int slot = first; slot < count * 2 && y + line <= tr.bottom && (slot - first) < lines; slot++) {
+			const MacroMonitorRow &row = rows[slot / 2];
+			if (slot % 2 == 0) {
+				const std::string text = std::string(row.label) + "  " + FormatMonitorValue(row.value, row.format);
+				DrawString(tr.left, tr.right, y, text, TextColour::Black, AlignmentH::Start, false, FontSize::Small);
+			} else {
+				DrawString(tr.left, tr.right, y, std::string(row.detail), TextColour::Grey, AlignmentH::Start, false, FontSize::Small);
+			}
 			y += line;
-		};
-		row(STR_MACRO_VAR_OUTPUT, _economy.macro_output);
-		row(STR_MACRO_VAR_GAME, _economy.macro_game_output);
-		row(STR_MACRO_VAR_EXO, _economy.macro_exogenous_output);
-		row(STR_MACRO_VAR_C, _economy.macro_consumption);
-		row(STR_MACRO_VAR_I, _economy.macro_investment);
-		row(STR_MACRO_VAR_G, _economy.macro_government);
-		row(STR_MACRO_VAR_YSTAR, _economy.macro_natural_output);
-		row(STR_MACRO_VAR_P, _economy.macro_price_index / 100);
-		row(STR_MACRO_VAR_M, cfg.islm_money_supply);
-		row(STR_MACRO_VAR_RM, _economy.macro_real_money);
-		row(STR_MACRO_VAR_MD, _economy.macro_money_demand);
-		row(STR_MACRO_VAR_T, _economy.macro_tax_revenue);
-		row(STR_MACRO_VAR_POP, _economy.macro_population);
-		row(STR_MACRO_VAR_CARGO, _economy.macro_cargo_capacity);
-		row(STR_MACRO_VAR_GSET, cfg.islm_government_spending);
-		row(STR_MACRO_VAR_SSET, cfg.islm_subsidies);
-		row(STR_MACRO_VAR_TAX, cfg.islm_tax_rate_percent);
-		row(STR_MACRO_VAR_T0, cfg.islm_autonomous_tax);
-		row(STR_MACRO_VAR_C0, cfg.islm_autonomous_consumption);
-		y += line / 2;
-		if (_economy.macro_interest_bp < 0) {
-			row(STR_MACRO_VAR_R_NEG, -_economy.macro_interest_bp, 2);
-		} else {
-			row(STR_MACRO_VAR_R, _economy.macro_interest_bp, 2);
 		}
-		if (_economy.macro_inflation_bp < 0) {
-			row(STR_MACRO_VAR_PI_NEG, -_economy.macro_inflation_bp, 2);
-		} else {
-			row(STR_MACRO_VAR_PI, _economy.macro_inflation_bp, 2);
-		}
-		row(STR_MACRO_VAR_U, _economy.macro_unemployment_bp, 2);
-		row(STR_MACRO_VAR_DEBT_PRICE, _economy.macro_private_debt_price);
 	}
 };
 
@@ -486,9 +511,18 @@ static constexpr std::initializer_list<NWidgetPart> _nested_macro_ledger_widgets
 		NWidget(WWT_CLOSEBOX, Colours::Brown),
 		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_LEDGER_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_SHADEBOX, Colours::Brown),
+		NWidget(WWT_DEFSIZEBOX, Colours::Brown),
 		NWidget(WWT_STICKYBOX, Colours::Brown),
 	EndContainer(),
-	NWidget(WWT_PANEL, Colours::Brown, WID_MDIAG_PANEL), SetMinimalSize(640, 420), SetFill(1, 1), EndContainer(),
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_PANEL, Colours::Brown, WID_MDIAG_PANEL), SetFill(1, 1), SetResize(1, 1),
+				SetMinimalTextLines(18, WidgetDimensions::unscaled.framerect.Vertical()), SetScrollbar(WID_MDIAG_SCROLL),
+		EndContainer(),
+		NWidget(NWID_VERTICAL),
+			NWidget(NWID_VSCROLLBAR, Colours::Brown, WID_MDIAG_SCROLL),
+			NWidget(WWT_RESIZEBOX, Colours::Brown),
+		EndContainer(),
+	EndContainer(),
 };
 
 static WindowDesc _macro_ledger_desc(
@@ -553,7 +587,7 @@ struct MacroSingleWindow : Window {
 static constexpr std::initializer_list<NWidgetPart> _nested_macro_single_widgets = {
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_CLOSEBOX, Colours::Brown),
-		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_LEDGER_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_GRAPH_ACTIVITY_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
 		NWidget(WWT_SHADEBOX, Colours::Brown),
 		NWidget(WWT_STICKYBOX, Colours::Brown),
 	EndContainer(),
