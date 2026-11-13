@@ -1,0 +1,27 @@
+model_version: economy-lab/1.0
+events:
+  - id: CargoDelivered
+    payload: [cargo, units, tariff]
+    hook: EconomyLabNoteDelivery
+    postings: [output debit, cash credit]
+    idempotence: reject a repeated sequence id
+  - id: SubsidyPaid
+    payload: [pounds]
+    hook: EconomyLabNoteSubsidy
+    postings: [subsidy debit, cash credit]
+    idempotence: reject a repeated sequence id
+  - id: MonthClosed
+    payload: [production, expenditure, exports, imports]
+    hook: EconomyLabSealIdentity
+    postings: [national accounts and trade]
+    idempotence: watermark plus one
+  - id: PolicyShock
+    payload: [variable, effective_tick, magnitude]
+    hook: EconomyLabRecordPolicyShock
+    postings: [audit trail]
+    idempotence: a new id for each click
+  - id: ScheduledShock
+    payload: [id, effective_tick, variable, operation, magnitude]
+    hook: ScheduleShock
+    postings: [applied when the session tick reaches effective_tick]
+    idempotence: reject a duplicate id

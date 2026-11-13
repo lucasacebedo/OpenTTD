@@ -46,6 +46,11 @@
 #include "3rdparty/fmt/chrono.h"
 #include "company_cmd.h"
 #include "misc_cmd.h"
+#include "gfx_func.h"
+#include "macro_economy.h"
+#include "economylab/accounts.h"
+#include "settings_internal.h"
+#include "timer/timer_game_economy.h"
 
 #if defined(WITH_ZLIB)
 #include "network/network_content.h"
@@ -1720,6 +1725,82 @@ static bool ConGetSeed(std::span<std::string_view> argv)
 	return true;
 }
 
+/** Print the variables the macro windows show, plus the recorded policy shocks. @copydoc IConsoleCmdProc */
+static bool ConMacro(std::span<std::string_view> argv)
+{
+	if (argv.empty()) {
+		IConsolePrint(CC_HELP, "Print the live macro variables and the shock audit. Usage: 'macro'.");
+		return true;
+	}
+
+	MacroMonitorRow rows[64];
+	const int count = FillMacroMonitor(rows, 64);
+	for (int i = 0; i < count; i++) {
+		IConsolePrint(CC_DEFAULT, "{} = {}", rows[i].label, rows[i].value);
+	}
+	const EconomyLabPersistent &saved = EconomyLabPersistentState();
+	IConsolePrint(CC_DEFAULT, "policy_shocks = {}", saved.policy_shock_count);
+	const uint8_t shown = saved.policy_shock_count < saved.policy_shock_id.size() ? saved.policy_shock_count : static_cast<uint8_t>(saved.policy_shock_id.size());
+	for (uint8_t i = 0; i < shown; i++) {
+		IConsolePrint(CC_DEFAULT, "shock id={} tick={} variable={} magnitude={}",
+			saved.policy_shock_id[i], saved.policy_shock_tick[i], static_cast<int>(saved.policy_shock_variable[i]), saved.policy_shock_magnitude[i]);
+	}
+	return true;
+}
+
+/** Do what the M +10% button does: raise the money setting and record the shock. @copydoc IConsoleCmdProc */
+static bool ConMoneyPlus(std::span<std::string_view> argv)
+{
+	if (argv.empty()) {
+		IConsolePrint(CC_HELP, "Raise the money supply by 10 percent, the same as the policy button. Usage: 'mplus'.");
+		return true;
+	}
+	const SettingDesc *setting = GetSettingFromName("economy.islm_money_supply");
+	if (setting == nullptr || !setting->IsIntSetting()) {
+		IConsolePrint(CC_ERROR, "The money setting is not available.");
+		return true;
+	}
+	const IntSettingDesc *integer_setting = setting->AsIntSetting();
+	const int32_t current = integer_setting->Read(&GetGameSettings());
+	const int32_t magnitude = current < 0 ? -current : current;
+	int32_t step = static_cast<int32_t>((static_cast<int64_t>(magnitude) * 10 + 50) / 100);
+	if (step < 1) step = 1;
+	SetSettingValue(integer_setting, current + step);
+	const int32_t applied = integer_setting->Read(&GetGameSettings());
+	if (applied != current) {
+		EconomyLabRecordPolicyShock(ECONOMYLAB_SHOCK_MONEY, TimerGameEconomy::date.base(), static_cast<int64_t>(applied) - current);
+	}
+	IConsolePrint(CC_DEFAULT, "money {} -> {}", current, applied);
+	return true;
+}
+
+/** Set the same speeds as the macro dashboard. @copydoc IConsoleCmdProc */
+static bool ConSpeed(std::span<std::string_view> argv)
+{
+	if (argv.empty()) {
+		IConsolePrint(CC_HELP, "Set the game speed. Usage: 'speed [100|1000|10000|100000]'.");
+		return true;
+	}
+	if (argv.size() == 1) {
+		IConsolePrint(CC_DEFAULT, "speed = {}", _game_speed);
+		return true;
+	}
+	if (argv.size() != 2) return false;
+
+	uint32_t speed = 0;
+	for (char glyph : argv[1]) {
+		if (glyph < '0' || glyph > '9') return false;
+		speed = speed * 10u + static_cast<uint32_t>(glyph - '0');
+	}
+	if (speed != 100 && speed != 1000 && speed != 10000 && speed != 100000) {
+		IConsolePrint(CC_ERROR, "Speed must be 100, 1000, 10000 or 100000.");
+		return true;
+	}
+	SetGameSpeed(speed);
+	IConsolePrint(CC_DEFAULT, "speed = {}", speed);
+	return true;
+}
+
 /** Get the current game date. @copydoc IConsoleCmdProc */
 static bool ConGetDate(std::span<std::string_view> argv)
 {
@@ -2976,6 +3057,9 @@ void IConsoleStdLibRegister()
 	IConsole::CmdRegister("reload",                  ConReload);
 	IConsole::CmdRegister("getseed",                 ConGetSeed);
 	IConsole::CmdRegister("getdate",                 ConGetDate);
+	IConsole::CmdRegister("macro",                   ConMacro);
+	IConsole::CmdRegister("mplus",                   ConMoneyPlus);
+	IConsole::CmdRegister("speed",                   ConSpeed);
 	IConsole::CmdRegister("getsysdate",              ConGetSysDate);
 	IConsole::CmdRegister("quit",                    ConExit);
 	IConsole::CmdRegister("resetengines",            ConResetEngines,     ConHookNoNetwork);

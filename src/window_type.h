@@ -791,6 +791,13 @@ enum class WindowClass : uint16_t {
 	 */
 	MacroLedger,
 
+	/**
+	 * Rest of the world: one US dollar rate, world growth and the world interest rate.
+	 * %Window numbers:
+	 *   - 0 = #MacroWorldWidgets
+	 */
+	MacroWorld,
+
 	Invalid = 0xFFFF, ///< Invalid window.
 };
 

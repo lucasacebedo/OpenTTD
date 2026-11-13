@@ -1896,11 +1896,17 @@ bool AdjustGUIZoom(bool automatic)
 	return true;
 }
 
+void SetGameSpeed(uint32_t speed)
+{
+	_game_speed = speed;
+	SetWindowDirty(WindowClass::Statusbar, 0);
+}
+
 void ChangeGameSpeed(bool enable_fast_forward)
 {
 	if (enable_fast_forward) {
-		_game_speed = _settings_client.gui.fast_forward_speed_limit;
+		SetGameSpeed(_settings_client.gui.fast_forward_speed_limit);
 	} else {
-		_game_speed = 100;
+		SetGameSpeed(100);
 	}
 }

@@ -36,6 +36,15 @@ void RefreshMacroEconomy();
 void MacroEconomyMonthly();
 void MacroEconomyObserve();
 
+/** 1 when measured GDP is outside the range E-027 can express. The level is not recentered. */
+int MacroCalibrationError();
+
+/** How many published series are sitting on a safety clamp. */
+int MacroClampCount();
+
+/** 10000 when the identity, the calibration and the clamps are clean. */
+int MacroRunQuality();
+
 /** Extra profit paid because a delivery was subsidised, in pounds. */
 void MacroNoteSubsidyPayment(int64_t pounds);
 

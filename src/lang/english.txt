@@ -1470,33 +1470,35 @@ STR_MACRO_OUTPUT                                                :{BLACK}GDP {COM
 STR_MACRO_RATES                                                 :{BLACK}Interest {RAW_STRING}, inflation {RAW_STRING}, expected inflation {RAW_STRING}
 STR_MACRO_PRICES                                                :{BLACK}Price index {DECIMAL}, real money {COMMA}
 STR_MACRO_DEMAND                                                :{BLACK}Consumption {COMMA}, capital formation {COMMA}, government purchases {COMMA}, taxes {COMMA}
-STR_MACRO_DEFICIT                                               :{BLACK}Budget balance G - T: {COMMA}. Cargo activity: {DECIMAL}%
-STR_MACRO_INSTRUMENTS                                           :{BLACK}Now: G {COMMA}, tax {NUM}%, autonomous tax {COMMA}, money {COMMA}
+STR_MACRO_TRADE                                                 :{BLACK}Exports {COMMA}, imports {COMMA}, net exports {COMMA}
+STR_MACRO_DEFICIT                                               :{BLACK}Budget balance, purchases − taxes: {COMMA}. Cargo activity: {DECIMAL}%
+STR_MACRO_INSTRUMENTS                                           :{BLACK}Now: G {COMMA} points = {COMMA} pounds, tax {NUM}%, autonomous tax {COMMA} points, money {COMMA}
 STR_MACRO_LABOUR                                               :{BLACK}Population {COMMA}, growth {RAW_STRING}, unemployment {RAW_STRING}
 STR_MACRO_CAPACITY                                              :{BLACK}Cargo capacity {COMMA}, company investment {COMMA}, capital {COMMA}
-STR_MACRO_DEBT                                                  :{BLACK}Public debt {COMMA}, interest on the debt {COMMA}
+STR_MACRO_DEBT                                                  :{BLACK}Public debt {COMMA}, debt coupon this month {COMMA}
+STR_MACRO_AUDIT                                                 :{BLACK}Audit: discrepancy {COMMA}, calibration error {NUM}, clamps {NUM}, quality {NUM}
 STR_MACRO_HUNDREDTHS                                            :{DECIMAL}%
 STR_MACRO_HUNDREDTHS_NEGATIVE                                   :-{DECIMAL}%
-STR_MACRO_G_DOWN                                                :G -10
-STR_MACRO_G_UP                                                  :G +10
-STR_MACRO_G_TOOLTIP                                             :{BLACK}Change government spending. This shifts the IS curve
-STR_MACRO_TAX_DOWN                                              :t -1
-STR_MACRO_TAX_UP                                                :t +1
-STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Change the marginal tax rate
-STR_MACRO_T0_DOWN                                               :T -10
-STR_MACRO_T0_UP                                                 :T +10
-STR_MACRO_T0_TOOLTIP                                            :{BLACK}Change autonomous taxes
-STR_MACRO_M_DOWN                                                :M -20
-STR_MACRO_M_UP                                                  :M +20
-STR_MACRO_M_TOOLTIP                                             :{BLACK}Change the nominal money supply. This shifts the LM curve
+STR_MACRO_G_DOWN                                                :G -10%
+STR_MACRO_G_UP                                                  :G +10%
+STR_MACRO_G_TOOLTIP                                             :{BLACK}Raise or lower government spending by 10 percent of its current value. This shifts the IS curve
+STR_MACRO_TAX_DOWN                                              :t -10%
+STR_MACRO_TAX_UP                                                :t +10%
+STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Raise or lower the marginal tax rate by 10 percent of its current value
+STR_MACRO_T0_DOWN                                               :T -10%
+STR_MACRO_T0_UP                                                 :T +10%
+STR_MACRO_T0_TOOLTIP                                            :{BLACK}Raise or lower autonomous taxes by 10 percent of their current value
+STR_MACRO_M_DOWN                                                :M -10%
+STR_MACRO_M_UP                                                  :M +10%
+STR_MACRO_M_TOOLTIP                                             :{BLACK}Raise or lower the nominal money supply by 10 percent of its current value. This shifts the LM curve
 STR_MACRO_OPEN_SETTINGS                                         :All parameters
 STR_MACRO_OPEN_SETTINGS_TOOLTIP                                 :{BLACK}Open the settings window. Every IS and LM coefficient, and the Phillips curve, can be edited there
 STR_CONFIG_SETTING_ISLM_SUBSIDIES                               :Subsidies: {STRING2}
 STR_CONFIG_SETTING_ISLM_SUBSIDIES_HELPTEXT                      :Subsidy payments in output points. They are added to government purchases, together with the extra profit the game pays on subsidised routes
 STR_MACRO_SUBSIDY_LINE                                          :{BLACK}Subsidies {COMMA}, route-subsidy payments last month {COMMA}
-STR_MACRO_S_DOWN                                                :S -10
-STR_MACRO_S_UP                                                  :S +10
-STR_MACRO_S_TOOLTIP                                             :{BLACK}Change subsidies. The payment is part of government spending
+STR_MACRO_S_DOWN                                                :S -10%
+STR_MACRO_S_UP                                                  :S +10%
+STR_MACRO_S_TOOLTIP                                             :{BLACK}Raise or lower subsidies by 10 percent of their current value. The payment is part of government spending
 STR_MACRO_OPEN_DASHBOARD                                        :Dashboard
 STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Open the live macro dashboard
 STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Macro dashboard
@@ -1507,8 +1509,8 @@ STR_MACRO_EQ_RATES                                              :{BLACK}Interest
 STR_MACRO_EQ_PUBLIC                                             :{BLACK}Public debt {COMMA}. Issued {COMMA}, bought back {COMMA}, interest {COMMA}
 STR_MACRO_EQ_PRIVATE                                            :{BLACK}Private debt {COMMA}, change {COMMA}, interest {COMMA}, loan ceiling {NUM}%
 STR_MACRO_LINK_INVESTMENT                                       :{BLACK}The policy rate is the Taylor rule. Companies pay that rate on loans, so dearer credit trims construction and vehicle purchases. Maintenance is not investment.
-STR_MACRO_LINK_DEBT                                             :{BLACK}A deficit is financed with bonds. The rate itself follows inflation and the output gap. The money slider does not set the rate.
-STR_MACRO_LINK_CARGO                                            :{BLACK}Potential output is calibrated once, then moves with population, capital and cargo capacity. It is not reset to GDP.
+STR_MACRO_LINK_DEBT                                             :{BLACK}A deficit is financed with bonds. Real money shifts goods demand, and the Taylor rate follows that demand gap. The money slider does not replace the Taylor rate.
+STR_MACRO_LINK_CARGO                                            :{BLACK}Potential output moves with population, capital and cargo capacity. If GDP leaves the range that function can express, the panel reports a calibration error and does not copy GDP into potential. Policy points stay on the calibration scale: 1000 points equal calibrated GDP.
 STR_MACRO_LINK_SUBSIDY                                          :{BLACK}A route subsidy is a transfer from the government to the company. It is not government consumption and it is not extra GDP.
 STR_MACRO_SPEED_1                                               :x1
 STR_MACRO_SPEED_10                                              :x10
@@ -1522,7 +1524,7 @@ STR_MACRO_GRAPH_FLOW_CAPTION                                    :{WHITE}Inflatio
 STR_MACRO_GRAPH_FLOW_FOOTER                                     :{TINY_FONT}{BLACK}Blue inflation (hundredths of a percent), red public-debt change, green private-debt change
 STR_MACRO_GRAPH_ACTIVITY_CAPTION                                :{WHITE}Output and government
 STR_MACRO_GRAPH_ACTIVITY_FOOTER                                 :{TINY_FONT}{BLACK}Blue output (the same output as the dashboard), red potential, green investment, orange government, purple subsidies
-STR_MACRO_EQ_SPLIT                                               :{BLACK}GDP production {COMMA}. Physical volume {COMMA}. Discrepancy {COMMA}
+STR_MACRO_EQ_SPLIT                                               :{BLACK}Output {COMMA} = C+I+G+X−M {COMMA} + discrepancy {COMMA}
 STR_GRAPH_MENU_MACRO_MONEY                                       :Prices and money
 STR_GRAPH_MENU_MACRO_ISLM                                        :IS-LM diagram
 STR_GRAPH_MENU_MACRO_ASAD                                        :Aggregate supply and demand
@@ -6227,3 +6229,29 @@ STR_BADGE_FILTER_ANY_LABEL                                      :Any {STRING}
 STR_MACRO_SPEED_1000                                            :x1000
 STR_MACRO_SPEED_MENU_1000                                       :Fastest (1000x)
 STR_MACRO_VAR_DEBT_PRICE                                        :{BLACK}Private-debt price {COMMA}. Endogenous. It rises when a government surplus cuts the interest rate
+
+STR_MACRO_OPEN_WORLD                                            :Rest of the world
+STR_MACRO_OPEN_WORLD_TOOLTIP                                    :{BLACK}Open the rest-of-the-world panel: one US dollar, world growth and the world interest rate
+STR_MACRO_WORLD_CAPTION                                         :{WHITE}Rest of the world
+STR_MACRO_WORLD_GROWTH                                          :{BLACK}World GDP growth {RAW_STRING}. World GDP index {COMMA}
+STR_MACRO_WORLD_RATE                                            :{BLACK}World interest {RAW_STRING}. External bonds pay this rate and are in perfectly elastic supply
+STR_MACRO_WORLD_DOLLAR                                          :{BLACK}US dollar index {COMMA}. Expected depreciation {RAW_STRING}. 10000 is 100
+STR_MACRO_WORLD_TRADE                                           :{BLACK}Exports {COMMA}, imports {COMMA}, terms of trade {COMMA}
+STR_MACRO_WORLD_DEBT                                            :{BLACK}External bonds {COMMA}. Interest this month {COMMA}
+STR_MACRO_WORLD_NOTE                                            :{BLACK}Exports follow rest-of-world GDP. Imports follow local GDP. Expected depreciation is proportional to the current-account gap and moves the dollar back toward balance. Terms of trade fluctuate ±5 percent around a flat trend.
+STR_MACRO_WORLD_GROWTH_DOWN                                     :g* -10%
+STR_MACRO_WORLD_GROWTH_UP                                       :g* +10%
+STR_MACRO_WORLD_GROWTH_TOOLTIP                                  :{BLACK}Change rest-of-world GDP growth by 10 percent of its current value. 250 is 2.50 percent a year
+STR_MACRO_WORLD_RATE_DOWN                                       :i* -10%
+STR_MACRO_WORLD_RATE_UP                                         :i* +10%
+STR_MACRO_WORLD_RATE_TOOLTIP                                    :{BLACK}Change the exogenous world interest rate by 10 percent of its current value. 200 is 2.00 percent a year
+STR_CONFIG_SETTING_ISLM_WORLD_GROWTH                            :Rest-of-world growth, hundredths of a percent: {STRING2}
+STR_CONFIG_SETTING_ISLM_WORLD_GROWTH_HELPTEXT                   :Annual growth of rest-of-world GDP. 250 is 2.50 percent. Export demand is proportional to that GDP
+STR_CONFIG_SETTING_ISLM_WORLD_INTEREST                          :World interest rate, hundredths of a percent: {STRING2}
+STR_CONFIG_SETTING_ISLM_WORLD_INTEREST_HELPTEXT                 :Exogenous annual rate paid on external bonds. 200 is 2.00 percent. Any current-account gap is financed at this rate
+STR_CONFIG_SETTING_ISLM_WAGE_SHARE                              :Wage share of GDP: {STRING2}
+STR_CONFIG_SETTING_ISLM_WAGE_SHARE_HELPTEXT                     :Share of GDP paid as wages. The rest is profit. Dividends are paid out of profit after interest
+STR_CONFIG_SETTING_ISLM_DIVIDEND_PAYOUT                         :Dividend payout: {STRING2}
+STR_CONFIG_SETTING_ISLM_DIVIDEND_PAYOUT_HELPTEXT                :Share of profit after interest distributed to shareholders. It leaves company cash
+STR_CONFIG_SETTING_ISLM_OWNER_MPC                               :Shareholders' propensity to consume: {STRING2}
+STR_CONFIG_SETTING_ISLM_OWNER_MPC_HELPTEXT                      :Share of dividends that shareholders spend. The rest is saved and placed in money, private bonds, public bonds or external bonds

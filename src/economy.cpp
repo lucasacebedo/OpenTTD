@@ -821,7 +821,9 @@ static void CompaniesPayInterest()
 		 * taking a loan) we make companies pay interest on negative cash as well,
 		 * except if infinite money is enabled.
 		 */
-		const int interest_bp = _settings_game.economy.islm_enabled ? std::max<int>(_economy.macro_interest_bp, 0) : _economy.interest_rate * 100;
+		const int interest_bp = _settings_game.economy.islm_enabled
+			? std::max<int>(_economy.macro_loan_rate_bp > 0 ? _economy.macro_loan_rate_bp : _economy.macro_interest_bp, 0)
+			: _economy.interest_rate * 100;
 		Money yearly_fee = c->current_loan * interest_bp / 10000;
 		Money available_money = GetAvailableMoney(c->index);
 		if (available_money < 0) {
@@ -943,6 +945,7 @@ void InitializeEconomy()
 	_economy.macro_investment = 0;
 	_economy.macro_tax_revenue = 0;
 	_economy.macro_real_money = 0;
+	_economy.macro_goods_demand = 0;
 	_economy.macro_ok = 0;
 	ClearCargoPickupMonitoring();
 	ClearCargoDeliveryMonitoring();

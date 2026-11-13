@@ -6011,33 +6011,35 @@ STR_MACRO_OUTPUT                                                :{BLACK}PIB {COM
 STR_MACRO_RATES                                                 :{BLACK}Interés {STRING}, inflación {STRING}, inflación esperada {STRING}
 STR_MACRO_PRICES                                                :{BLACK}Índice de precios {DECIMAL}, dinero real {COMMA}
 STR_MACRO_DEMAND                                                :{BLACK}Consumo {COMMA}, formación de capital {COMMA}, compras públicas {COMMA}, impuestos {COMMA}
-STR_MACRO_DEFICIT                                               :{BLACK}Saldo presupuestario G - T: {COMMA}. Actividad de la carga: {DECIMAL}%
-STR_MACRO_INSTRUMENTS                                           :{BLACK}Ahora: G {COMMA}, impuesto {NUM}%, impuesto autónomo {COMMA}, dinero {COMMA}
+STR_MACRO_TRADE                                                 :{BLACK}Exportaciones {COMMA}, importaciones {COMMA}, saldo exterior {COMMA}
+STR_MACRO_DEFICIT                                               :{BLACK}Saldo compras − impuestos: {COMMA}. Actividad de la carga: {DECIMAL}%
+STR_MACRO_INSTRUMENTS                                           :{BLACK}Ahora: G {COMMA} puntos = {COMMA} libras, impuesto {NUM}%, impuesto autónomo {COMMA} puntos, dinero {COMMA}
 STR_MACRO_LABOUR                                                :{BLACK}Población {COMMA}, crecimiento {STRING}, desempleo {STRING}
 STR_MACRO_CAPACITY                                              :{BLACK}Capacidad de carga {COMMA}, inversión de las empresas {COMMA}, capital {COMMA}
-STR_MACRO_DEBT                                                  :{BLACK}Deuda pública {COMMA}, interés de la deuda {COMMA}
+STR_MACRO_DEBT                                                  :{BLACK}Deuda pública {COMMA}, cupón de la deuda este mes {COMMA}
+STR_MACRO_AUDIT                                                 :{BLACK}Auditoría: discrepancia {COMMA}, error de calibración {NUM}, clamps {NUM}, calidad {NUM}
 STR_MACRO_HUNDREDTHS                                            :{DECIMAL}%
 STR_MACRO_HUNDREDTHS_NEGATIVE                                   :-{DECIMAL}%
-STR_MACRO_G_DOWN                                                :G -10
-STR_MACRO_G_UP                                                  :G +10
-STR_MACRO_G_TOOLTIP                                             :{BLACK}Cambia el gasto público. Esto desplaza la curva IS
-STR_MACRO_TAX_DOWN                                              :t -1
-STR_MACRO_TAX_UP                                                :t +1
-STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Cambia el tipo impositivo marginal
-STR_MACRO_T0_DOWN                                               :T -10
-STR_MACRO_T0_UP                                                 :T +10
-STR_MACRO_T0_TOOLTIP                                            :{BLACK}Cambia los impuestos autónomos
-STR_MACRO_M_DOWN                                                :M -20
-STR_MACRO_M_UP                                                  :M +20
-STR_MACRO_M_TOOLTIP                                             :{BLACK}Cambia la oferta monetaria nominal. Esto desplaza la curva LM
+STR_MACRO_G_DOWN                                                :G -10%
+STR_MACRO_G_UP                                                  :G +10%
+STR_MACRO_G_TOOLTIP                                             :{BLACK}Sube o baja el gasto un 10% de su valor actual. Esto desplaza la curva IS
+STR_MACRO_TAX_DOWN                                              :t -10%
+STR_MACRO_TAX_UP                                                :t +10%
+STR_MACRO_TAX_TOOLTIP                                           :{BLACK}Sube o baja el tipo impositivo un 10% de su valor actual
+STR_MACRO_T0_DOWN                                               :T -10%
+STR_MACRO_T0_UP                                                 :T +10%
+STR_MACRO_T0_TOOLTIP                                            :{BLACK}Sube o baja el impuesto autónomo un 10% de su valor actual
+STR_MACRO_M_DOWN                                                :M -10%
+STR_MACRO_M_UP                                                  :M +10%
+STR_MACRO_M_TOOLTIP                                             :{BLACK}Sube o baja la oferta monetaria un 10% de su valor actual. Esto desplaza la curva LM
 STR_MACRO_OPEN_SETTINGS                                         :Todos los parámetros
 STR_MACRO_OPEN_SETTINGS_TOOLTIP                                 :{BLACK}Abre la ventana de ajustes. Ahí se editan todos los coeficientes IS y LM, y la curva de Phillips
 STR_CONFIG_SETTING_ISLM_SUBSIDIES                               :Subsidios: {STRING}
 STR_CONFIG_SETTING_ISLM_SUBSIDIES_HELPTEXT                      :Pagos de subsidios en puntos de producto. Se suman a las compras del Estado, junto con el beneficio extra que el juego paga en las rutas subvencionadas
 STR_MACRO_SUBSIDY_LINE                                          :{BLACK}Subsidios {COMMA}, pagos de rutas subvencionadas el mes pasado {COMMA}
-STR_MACRO_S_DOWN                                                :S -10
-STR_MACRO_S_UP                                                  :S +10
-STR_MACRO_S_TOOLTIP                                             :{BLACK}Cambia los subsidios. El pago forma parte del gasto público
+STR_MACRO_S_DOWN                                                :S -10%
+STR_MACRO_S_UP                                                  :S +10%
+STR_MACRO_S_TOOLTIP                                             :{BLACK}Sube o baja los subsidios un 10% de su valor actual. El pago forma parte del gasto público
 STR_MACRO_OPEN_DASHBOARD                                        :Panel
 STR_MACRO_OPEN_DASHBOARD_TOOLTIP                                :{BLACK}Abre el panel macro en tiempo real
 STR_MACRO_DASHBOARD_CAPTION                                     :{WHITE}Panel macro
@@ -6048,8 +6050,8 @@ STR_MACRO_EQ_RATES                                              :{BLACK}Interés
 STR_MACRO_EQ_PUBLIC                                             :{BLACK}Deuda pública {COMMA}. Emitida {COMMA}, recomprada {COMMA}, interés {COMMA}
 STR_MACRO_EQ_PRIVATE                                            :{BLACK}Deuda privada {COMMA}, variación {COMMA}, interés {COMMA}, tope de préstamo {NUM}%
 STR_MACRO_LINK_INVESTMENT                                       :{BLACK}La tasa de política es la regla de Taylor. Las empresas pagan esa tasa por sus préstamos, así que el crédito más caro recorta la construcción y la compra de vehículos. El mantenimiento no es inversión.
-STR_MACRO_LINK_DEBT                                             :{BLACK}Un déficit se financia con bonos. La tasa sigue a la inflación y a la brecha de producto. El deslizador del dinero no fija la tasa.
-STR_MACRO_LINK_CARGO                                            :{BLACK}El producto potencial se calibra una vez y luego se mueve con la población, el capital y la capacidad de carga. No se vuelve a igualar al PIB.
+STR_MACRO_LINK_DEBT                                             :{BLACK}Un déficit se financia con bonos. El dinero real mueve la demanda de bienes y la tasa de Taylor sigue esa brecha. El deslizador del dinero no sustituye a la regla de Taylor.
+STR_MACRO_LINK_CARGO                                            :{BLACK}El producto potencial se mueve con la población, el capital y la capacidad de carga. Si el PIB se sale del rango que esa función puede expresar, el panel muestra un error de calibración y no copia el PIB al potencial. Los puntos de política siguen en la escala de la calibración: 1000 puntos son el PIB calibrado.
 STR_MACRO_LINK_SUBSIDY                                          :{BLACK}El subsidio de una ruta es una transferencia del gobierno a la empresa. No es consumo público ni producto adicional.
 STR_MACRO_SPEED_1                                               :x1
 STR_MACRO_SPEED_10                                              :x10
@@ -6181,7 +6183,7 @@ STR_ERROR_BRIDGE_TOO_LOW_FOR_LOCK                               :{WHITE}El puent
 STR_VIEWPORT_TOWN_CITY                                          :{TOWN} {CITY_ICON}
 STR_VIEWPORT_TOWN_CITY_POP                                      :{TOWN} ({COMMA}) {CITY_ICON}
 
-STR_MACRO_EQ_SPLIT                                               :{BLACK}PIB producción {COMMA}. Volumen físico {COMMA}. Discrepancia {COMMA}
+STR_MACRO_EQ_SPLIT                                               :{BLACK}Producto {COMMA} = C+I+G+X−M {COMMA} + discrepancia {COMMA}
 STR_GRAPH_MENU_MACRO_MONEY                                       :Precios y dinero
 STR_GRAPH_MENU_MACRO_ISLM                                        :Diagrama IS-LM
 STR_GRAPH_MENU_MACRO_ASAD                                        :Oferta y demanda agregadas
@@ -6231,3 +6233,29 @@ STR_MACRO_VAR_U                                                  :{BLACK}Desempl
 STR_MACRO_SPEED_1000                                            :x1000
 STR_MACRO_SPEED_MENU_1000                                       :Máximo (1000x)
 STR_MACRO_VAR_DEBT_PRICE                                        :{BLACK}Precio de la deuda privada {COMMA}. Endógena. Sube cuando un superávit del gobierno baja la tasa de interés
+
+STR_MACRO_OPEN_WORLD                                            :Resto del mundo
+STR_MACRO_OPEN_WORLD_TOOLTIP                                    :{BLACK}Abre el panel del resto del mundo: un dólar US, el crecimiento mundial y la tasa de interés internacional
+STR_MACRO_WORLD_CAPTION                                         :{WHITE}Resto del mundo
+STR_MACRO_WORLD_GROWTH                                          :{BLACK}Crecimiento del PIB mundial {RAW_STRING}. Índice del PIB mundial {COMMA}
+STR_MACRO_WORLD_RATE                                            :{BLACK}Interés mundial {RAW_STRING}. Los bonos externos pagan esta tasa y su oferta es infinitamente elástica
+STR_MACRO_WORLD_DOLLAR                                          :{BLACK}Índice del dólar US {COMMA}. Depreciación esperada {RAW_STRING}. 10000 es 100
+STR_MACRO_WORLD_TRADE                                           :{BLACK}Exportaciones {COMMA}, importaciones {COMMA}, términos de intercambio {COMMA}
+STR_MACRO_WORLD_DEBT                                            :{BLACK}Bonos externos {COMMA}. Interés de este mes {COMMA}
+STR_MACRO_WORLD_NOTE                                            :{BLACK}Las exportaciones siguen al PIB del resto del mundo. Las importaciones siguen al PIB local. La depreciación esperada es proporcional al déficit de cuenta corriente y mueve el dólar para reponer el balance. Los términos de intercambio oscilan ±5% alrededor de una tendencia plana.
+STR_MACRO_WORLD_GROWTH_DOWN                                     :g* -10%
+STR_MACRO_WORLD_GROWTH_UP                                       :g* +10%
+STR_MACRO_WORLD_GROWTH_TOOLTIP                                  :{BLACK}Cambia el crecimiento del resto del mundo un 10% de su valor actual. 250 es 2,50% anual
+STR_MACRO_WORLD_RATE_DOWN                                       :i* -10%
+STR_MACRO_WORLD_RATE_UP                                         :i* +10%
+STR_MACRO_WORLD_RATE_TOOLTIP                                    :{BLACK}Cambia la tasa de interés internacional un 10% de su valor actual. 200 es 2,00% anual
+STR_CONFIG_SETTING_ISLM_WORLD_GROWTH                            :Crecimiento del resto del mundo, centésimas de punto: {STRING}
+STR_CONFIG_SETTING_ISLM_WORLD_GROWTH_HELPTEXT                   :Crecimiento anual del PIB del resto del mundo. 250 es 2,50%. La demanda de exportaciones es proporcional a ese PIB
+STR_CONFIG_SETTING_ISLM_WORLD_INTEREST                          :Tasa de interés mundial, centésimas de punto: {STRING}
+STR_CONFIG_SETTING_ISLM_WORLD_INTEREST_HELPTEXT                 :Tasa anual exógena que pagan los bonos externos. 200 es 2,00%. Cualquier saldo de cuenta corriente se financia a esta tasa
+STR_CONFIG_SETTING_ISLM_WAGE_SHARE                              :Participación de los salarios en el PIB: {STRING}
+STR_CONFIG_SETTING_ISLM_WAGE_SHARE_HELPTEXT                     :Parte del PIB que se paga como salarios. El resto es beneficio. Los dividendos salen del beneficio después del interés
+STR_CONFIG_SETTING_ISLM_DIVIDEND_PAYOUT                         :Reparto de dividendos: {STRING}
+STR_CONFIG_SETTING_ISLM_DIVIDEND_PAYOUT_HELPTEXT                :Parte del beneficio después del interés que se reparte a los accionistas. Sale de la caja de las compañías
+STR_CONFIG_SETTING_ISLM_OWNER_MPC                               :Propensión a consumir de los accionistas: {STRING}
+STR_CONFIG_SETTING_ISLM_OWNER_MPC_HELPTEXT                      :Parte de los dividendos que los accionistas gastan. El resto se ahorra y se coloca en dinero, bonos privados, bonos públicos o bonos externos

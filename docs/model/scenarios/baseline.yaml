@@ -1,0 +1,16 @@
+experiment:
+  id: baseline
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 20
+  warmup_years: 0
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  shocks: []
+  outputs: [gdp_real, inflation_cpi, policy_rate, fx_nominal, current_account, credit, unemployment]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-00. No shock. Identities and debt stay at the baseline.

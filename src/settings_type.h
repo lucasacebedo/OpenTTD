@@ -670,6 +670,11 @@ struct EconomySettings {
 	uint8_t islm_expectation_adaptation_percent; ///< share of an inflation surprise built into expectations each year
 	uint8_t islm_payment_inflation_percent; ///< share of Phillips inflation passed into cargo payments
 	uint8_t islm_output_gap_cargo_link; ///< share of the output gap passed into town and industry production
+	uint16_t islm_world_growth_bp; ///< rest-of-world GDP growth, hundredths of a percent per year. 250 is 2.50%
+	uint16_t islm_world_interest_bp; ///< exogenous world interest rate, hundredths of a percent per year
+	uint8_t islm_wage_share_percent; ///< share of GDP paid as wages. The rest is profit
+	uint8_t islm_dividend_payout_percent; ///< share of profit after interest paid out to shareholders
+	uint8_t islm_owner_mpc_percent; ///< shareholders' marginal propensity to consume. The rest of the dividend is saved
 };
 
 struct LinkGraphSettings {

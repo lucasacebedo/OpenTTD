@@ -1,0 +1,21 @@
+experiment:
+  id: bank-crisis
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 10
+  warmup_years: 1
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  shocks:
+    - variable: banks.default_probability
+      effective_period: 2030-01-01
+      effective_tick: 30
+      operation: add
+      value: 100
+  outputs: [credit, expected_loss, public_debt, gdp_real]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-06. Probability of default of 100 bp on 4000 of loans gives an expected loss of 20.

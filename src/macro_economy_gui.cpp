@@ -15,6 +15,7 @@
 #include "settings_internal.h"
 #include "economy_func.h"
 #include "macro_economy.h"
+#include "economylab/accounts.h"
 #include "network/network.h"
 #include "gfx_func.h"
 #include "graph_gui.h"
@@ -34,14 +35,22 @@ static std::string FormatHundredthsPercent(int32_t hundredths)
 	return GetString(STR_MACRO_HUNDREDTHS, hundredths, 2);
 }
 
-static void StepEconomySetting(const char *name, int32_t delta)
+/** Move an integer setting by a percentage of its current value. A result of zero still moves by one. The click is a shock with an effective tick. */
+static void StepEconomySettingPercent(const char *name, int percent, uint8_t shock_variable, bool record = true)
 {
 	const SettingDesc *setting = GetSettingFromName(name);
 	if (setting == nullptr || !setting->IsIntSetting()) return;
 
 	const IntSettingDesc *integer_setting = setting->AsIntSetting();
 	const int32_t current = integer_setting->Read(&GetGameSettings());
-	SetSettingValue(integer_setting, current + delta);
+	const int32_t magnitude = current < 0 ? -current : current;
+	const int abs_percent = percent < 0 ? -percent : percent;
+	int32_t step = static_cast<int32_t>((static_cast<int64_t>(magnitude) * abs_percent + 50) / 100);
+	if (step < 1) step = 1;
+	if (percent < 0) step = -step;
+	SetSettingValue(integer_setting, current + step);
+	const int32_t applied = integer_setting->Read(&GetGameSettings());
+	if (record && applied != current) EconomyLabRecordPolicyShock(shock_variable, TimerGameEconomy::date.base(), static_cast<int64_t>(applied) - current);
 }
 
 struct MacroEconomyWindow : Window {
@@ -87,37 +96,48 @@ struct MacroEconomyWindow : Window {
 			row(GetString(STR_MACRO_RATES, FormatHundredthsPercent(_economy.macro_interest_bp), FormatHundredthsPercent(_economy.macro_inflation_bp), FormatHundredthsPercent(_economy.macro_expected_inflation_bp)));
 			row(GetString(STR_MACRO_PRICES, _economy.macro_price_index, 2, _economy.macro_real_money));
 			const int32_t government = _economy.macro_government;
-			row(GetString(STR_MACRO_EQ_SPLIT, _economy.macro_output, _economy.macro_game_output, _economy.macro_exogenous_output));
+			const int32_t absorption = _economy.macro_output - _economy.macro_exogenous_output;
+			row(GetString(STR_MACRO_EQ_SPLIT, _economy.macro_output, absorption, _economy.macro_exogenous_output));
 			row(GetString(STR_MACRO_DEMAND, _economy.macro_consumption, _economy.macro_investment, government, _economy.macro_tax_revenue));
+			const EconomyLabOpen &external = EconomyLabOpenState();
+			row(GetString(STR_MACRO_TRADE, external.exports, external.imports, external.exports - external.imports));
 			const int32_t deficit = government - _economy.macro_tax_revenue;
 			row(GetString(STR_MACRO_DEFICIT, deficit, MacroActivityPermyriad(), 2));
 			row(GetString(STR_MACRO_LABOUR, _economy.macro_population, FormatHundredthsPercent(_economy.macro_population_growth_bp), FormatHundredthsPercent(_economy.macro_unemployment_bp)));
 			row(GetString(STR_MACRO_CAPACITY, _economy.macro_cargo_capacity, _economy.macro_company_investment, _economy.macro_capital));
 			row(GetString(STR_MACRO_DEBT, _economy.macro_debt, _economy.macro_debt_service));
+			row(GetString(STR_MACRO_AUDIT, _economy.macro_exogenous_output, MacroCalibrationError(), MacroClampCount(), MacroRunQuality()));
 		}
 
 		y += line / 2;
-		row(GetString(STR_MACRO_INSTRUMENTS, cfg.islm_government_spending, cfg.islm_tax_rate_percent, cfg.islm_autonomous_tax, cfg.islm_money_supply));
+		const int64_t policy_scale = EconomyLabPersistentState().potential_base;
+		int64_t government_pounds = _economy.macro_government;
+		if (policy_scale > 0) government_pounds = static_cast<int64_t>(cfg.islm_government_spending) * policy_scale / 1000;
+		if (government_pounds > 2000000000) government_pounds = 2000000000;
+		if (government_pounds < 0) government_pounds = 0;
+		row(GetString(STR_MACRO_INSTRUMENTS, cfg.islm_government_spending, government_pounds, cfg.islm_tax_rate_percent, cfg.islm_autonomous_tax, cfg.islm_money_supply));
 		row(GetString(STR_MACRO_SUBSIDY_LINE, cfg.islm_subsidies, _economy.macro_subsidy_game));
 	}
 
 	void OnClick([[maybe_unused]] Point pt, WidgetID widget, [[maybe_unused]] int click_count) override
 	{
 		switch (widget) {
-			case WID_MACRO_G_DOWN: StepEconomySetting("economy.islm_government_spending", -10); break;
-			case WID_MACRO_G_UP: StepEconomySetting("economy.islm_government_spending", 10); break;
-			case WID_MACRO_TAX_DOWN: StepEconomySetting("economy.islm_tax_rate_percent", -1); break;
-			case WID_MACRO_TAX_UP: StepEconomySetting("economy.islm_tax_rate_percent", 1); break;
-			case WID_MACRO_T0_DOWN: StepEconomySetting("economy.islm_autonomous_tax", -10); break;
-			case WID_MACRO_T0_UP: StepEconomySetting("economy.islm_autonomous_tax", 10); break;
-			case WID_MACRO_M_DOWN: StepEconomySetting("economy.islm_money_supply", -20); break;
-			case WID_MACRO_M_UP: StepEconomySetting("economy.islm_money_supply", 20); break;
-			case WID_MACRO_S_DOWN: StepEconomySetting("economy.islm_subsidies", -10); break;
-			case WID_MACRO_S_UP: StepEconomySetting("economy.islm_subsidies", 10); break;
+			case WID_MACRO_G_DOWN: StepEconomySettingPercent("economy.islm_government_spending", -10, ECONOMYLAB_SHOCK_GOVERNMENT); break;
+			case WID_MACRO_G_UP: StepEconomySettingPercent("economy.islm_government_spending", 10, ECONOMYLAB_SHOCK_GOVERNMENT); break;
+			case WID_MACRO_TAX_DOWN: StepEconomySettingPercent("economy.islm_tax_rate_percent", -10, ECONOMYLAB_SHOCK_TAX); break;
+			case WID_MACRO_TAX_UP: StepEconomySettingPercent("economy.islm_tax_rate_percent", 10, ECONOMYLAB_SHOCK_TAX); break;
+			case WID_MACRO_T0_DOWN: StepEconomySettingPercent("economy.islm_autonomous_tax", -10, ECONOMYLAB_SHOCK_AUTONOMOUS_TAX); break;
+			case WID_MACRO_T0_UP: StepEconomySettingPercent("economy.islm_autonomous_tax", 10, ECONOMYLAB_SHOCK_AUTONOMOUS_TAX); break;
+			case WID_MACRO_M_DOWN: StepEconomySettingPercent("economy.islm_money_supply", -10, ECONOMYLAB_SHOCK_MONEY); break;
+			case WID_MACRO_M_UP: StepEconomySettingPercent("economy.islm_money_supply", 10, ECONOMYLAB_SHOCK_MONEY); break;
+			case WID_MACRO_S_DOWN: StepEconomySettingPercent("economy.islm_subsidies", -10, ECONOMYLAB_SHOCK_SUBSIDIES); break;
+			case WID_MACRO_S_UP: StepEconomySettingPercent("economy.islm_subsidies", 10, ECONOMYLAB_SHOCK_SUBSIDIES); break;
 			case WID_MACRO_SETTINGS: ShowGameOptions(); break;
 			case WID_MACRO_DASHBOARD: ShowMacroDashboard(); break;
+			case WID_MACRO_WORLD: ShowMacroWorld(); break;
 			default: break;
 		}
+		this->SetDirty();
 	}
 };
 
@@ -148,6 +168,7 @@ static constexpr std::initializer_list<NWidgetPart> _nested_macro_economy_widget
 	EndContainer(),
 	NWidget(NWID_HORIZONTAL),
 		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_MACRO_SETTINGS), SetStringTip(STR_MACRO_OPEN_SETTINGS, STR_MACRO_OPEN_SETTINGS_TOOLTIP), SetFill(1, 0),
+		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_MACRO_WORLD), SetStringTip(STR_MACRO_OPEN_WORLD, STR_MACRO_OPEN_WORLD_TOOLTIP), SetFill(1, 0),
 	EndContainer(),
 };
 
@@ -206,7 +227,7 @@ struct MacroDashboardWindow : Window {
 
 		const int32_t government = _economy.macro_government;
 		row(GetString(STR_MACRO_EQ_OUTPUT, _economy.macro_output, _economy.macro_consumption, _economy.macro_investment, government));
-		row(GetString(STR_MACRO_EQ_SPLIT, _economy.macro_output, _economy.macro_game_output, _economy.macro_exogenous_output));
+		row(GetString(STR_MACRO_EQ_SPLIT, _economy.macro_output, _economy.macro_output - _economy.macro_exogenous_output, _economy.macro_exogenous_output));
 		row(GetString(STR_MACRO_DEFICIT, government - _economy.macro_tax_revenue, MacroActivityPermyriad(), 2));
 		row(GetString(STR_MACRO_EQ_CARGO, _economy.macro_cargo_capacity, _economy.macro_cargo_potential, _economy.macro_natural_output));
 		row(GetString(STR_MACRO_EQ_RATES, FormatHundredthsPercent(_economy.macro_interest_bp), FormatHundredthsPercent(_economy.macro_inflation_bp), FormatHundredthsPercent(_economy.macro_unemployment_bp)));
@@ -222,10 +243,10 @@ struct MacroDashboardWindow : Window {
 	void OnClick([[maybe_unused]] Point pt, WidgetID widget, [[maybe_unused]] int click_count) override
 	{
 		switch (widget) {
-			case WID_MDASH_SPEED1: _game_speed = 100; break;
-			case WID_MDASH_SPEED10: _game_speed = 1000; break;
-			case WID_MDASH_SPEED100: _game_speed = 10000; break;
-			case WID_MDASH_SPEED1000: _game_speed = 100000; break;
+			case WID_MDASH_SPEED1: SetGameSpeed(100); break;
+			case WID_MDASH_SPEED10: SetGameSpeed(1000); break;
+			case WID_MDASH_SPEED100: SetGameSpeed(10000); break;
+			case WID_MDASH_SPEED1000: SetGameSpeed(100000); break;
 			case WID_MDASH_FLOW: ShowMacroSingleGraph(MACRO_HIST_INFLATION); break;
 			case WID_MDASH_ACTIVITY: ShowMacroSingleGraph(MACRO_HIST_OUTPUT); break;
 			case WID_MDASH_MONEY: ShowMacroSingleGraph(MACRO_HIST2_INTEREST); break;
@@ -274,6 +295,79 @@ void ShowMacroDashboard()
 	AllocateWindowDescFront<MacroDashboardWindow>(_macro_dashboard_desc, 0);
 }
 
+struct MacroWorldWindow : Window {
+	MacroWorldWindow(WindowDesc &desc, WindowNumber number) : Window(desc)
+	{
+		this->InitNested(number);
+		RefreshMacroEconomy();
+	}
+
+	const IntervalTimer<TimerGameEconomy> daily_refresh{{TimerGameEconomy::Trigger::Day, TimerGameEconomy::Priority::None}, [this](auto) {
+		this->SetDirty();
+	}};
+
+	void DrawWidget(const Rect &r, WidgetID widget) const override
+	{
+		if (widget != WID_WORLD_PANEL) return;
+		const EconomyLabOpen &open = EconomyLabOpenState();
+		const EconomySettings &cfg = _settings_game.economy;
+		Rect tr = r.Shrink(WidgetDimensions::scaled.framerect);
+		const int line = GetCharacterHeight(FontSize::Normal);
+		int y = tr.top;
+		auto row = [&](const std::string &text) {
+			if (y + line <= tr.bottom) DrawString(tr.left, tr.right, y, text);
+			y += line;
+		};
+		row(GetString(STR_MACRO_WORLD_GROWTH, FormatHundredthsPercent(cfg.islm_world_growth_bp), open.world_gdp_pm));
+		row(GetString(STR_MACRO_WORLD_RATE, FormatHundredthsPercent(cfg.islm_world_interest_bp)));
+		row(GetString(STR_MACRO_WORLD_DOLLAR, open.exchange_pm, FormatHundredthsPercent(open.expected_devaluation_bp)));
+		row(GetString(STR_MACRO_WORLD_TRADE, open.exports, open.imports, open.terms_of_trade_pm));
+		row(GetString(STR_MACRO_WORLD_DEBT, open.external_debt, open.external_service));
+		y += line / 2;
+		row(GetString(STR_MACRO_WORLD_NOTE));
+	}
+
+	void OnClick([[maybe_unused]] Point pt, WidgetID widget, [[maybe_unused]] int click_count) override
+	{
+		switch (widget) {
+			case WID_WORLD_GROWTH_DOWN: StepEconomySettingPercent("economy.islm_world_growth_bp", -10, ECONOMYLAB_SHOCK_WORLDRATE, false); break;
+			case WID_WORLD_GROWTH_UP: StepEconomySettingPercent("economy.islm_world_growth_bp", 10, ECONOMYLAB_SHOCK_WORLDRATE, false); break;
+			case WID_WORLD_RATE_DOWN: StepEconomySettingPercent("economy.islm_world_interest_bp", -10, ECONOMYLAB_SHOCK_WORLDRATE); break;
+			case WID_WORLD_RATE_UP: StepEconomySettingPercent("economy.islm_world_interest_bp", 10, ECONOMYLAB_SHOCK_WORLDRATE); break;
+			default: break;
+		}
+		this->SetDirty();
+	}
+};
+
+static constexpr std::initializer_list<NWidgetPart> _nested_macro_world_widgets = {
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_CLOSEBOX, Colours::Brown),
+		NWidget(WWT_CAPTION, Colours::Brown), SetStringTip(STR_MACRO_WORLD_CAPTION, STR_TOOLTIP_WINDOW_TITLE_DRAG_THIS),
+		NWidget(WWT_SHADEBOX, Colours::Brown),
+		NWidget(WWT_STICKYBOX, Colours::Brown),
+	EndContainer(),
+	NWidget(WWT_PANEL, Colours::Brown, WID_WORLD_PANEL), SetMinimalSize(640, 140), SetFill(1, 1), EndContainer(),
+	NWidget(NWID_HORIZONTAL),
+		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_WORLD_GROWTH_DOWN), SetStringTip(STR_MACRO_WORLD_GROWTH_DOWN, STR_MACRO_WORLD_GROWTH_TOOLTIP), SetFill(1, 0),
+		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_WORLD_GROWTH_UP), SetStringTip(STR_MACRO_WORLD_GROWTH_UP, STR_MACRO_WORLD_GROWTH_TOOLTIP), SetFill(1, 0),
+		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_WORLD_RATE_DOWN), SetStringTip(STR_MACRO_WORLD_RATE_DOWN, STR_MACRO_WORLD_RATE_TOOLTIP), SetFill(1, 0),
+		NWidget(WWT_PUSHTXTBTN, Colours::Brown, WID_WORLD_RATE_UP), SetStringTip(STR_MACRO_WORLD_RATE_UP, STR_MACRO_WORLD_RATE_TOOLTIP), SetFill(1, 0),
+	EndContainer(),
+};
+
+static WindowDesc _macro_world_desc(
+	WindowPosition::Center, "macro_world", 680, 240,
+	WindowClass::MacroWorld, WindowClass::None,
+	{},
+	_nested_macro_world_widgets
+);
+
+void ShowMacroWorld()
+{
+	AllocateWindowDescFront<MacroWorldWindow>(_macro_world_desc, 0);
+}
+
 /** Map a value into a pixel span. A zero span stays on the origin. */
 static int MapAxis(int origin, int span, int32_t value, int32_t low, int32_t high, bool from_top)
 {
@@ -319,7 +413,7 @@ struct MacroIsLmWindow : Window {
 	{
 		if (widget != WID_MDIAG_PANEL) return;
 		const Rect plot = r.Shrink(WidgetDimensions::scaled.framerect);
-		const int32_t x1 = std::max<int32_t>({_economy.macro_output, _economy.macro_natural_output, 100}) * 3 / 2;
+		const int32_t x1 = std::max<int32_t>({_economy.macro_output, _economy.macro_natural_output, _economy.macro_goods_demand, 100}) * 3 / 2;
 		const int32_t y0 = std::min<int32_t>(_economy.macro_interest_bp, 0) - 500;
 		const int32_t y1 = std::max<int32_t>(_economy.macro_interest_bp, 0) + 500;
 		GfxFillRect(plot, GetColourGradient(Colours::Grey, Shade::Dark));
@@ -341,7 +435,7 @@ struct MacroIsLmWindow : Window {
 			[](int32_t output) { return output; },
 			[](int32_t output) { return MacroInterestAtOutput(output); },
 			GetColourGradient(Colours::Red, Shade::Lighter));
-		DrawEquilibrium(plot, 0, x1, y0, y1, _economy.macro_output, _economy.macro_interest_bp);
+		DrawEquilibrium(plot, 0, x1, y0, y1, _economy.macro_goods_demand != 0 ? _economy.macro_goods_demand : _economy.macro_output, _economy.macro_interest_bp);
 		DrawString(plot.left, plot.right, plot.top, STR_MACRO_ISLM_LEGEND, TextColour::White);
 	}
 };
@@ -382,7 +476,7 @@ struct MacroAsAdWindow : Window {
 	{
 		if (widget != WID_MDIAG_PANEL) return;
 		const Rect plot = r.Shrink(WidgetDimensions::scaled.framerect);
-		const int32_t x1 = std::max<int32_t>({_economy.macro_output, _economy.macro_natural_output, 100}) * 3 / 2;
+		const int32_t x1 = std::max<int32_t>({_economy.macro_output, _economy.macro_natural_output, _economy.macro_goods_demand, 100}) * 3 / 2;
 		const int32_t price = std::max<int32_t>(_economy.macro_price_index, 100);
 		const int32_t y0 = price / 2;
 		const int32_t y1 = price * 2;
@@ -398,7 +492,7 @@ struct MacroAsAdWindow : Window {
 			[](int32_t output) { return output; },
 			[](int32_t output) { return MacroPriceAtOutput(output); },
 			GetColourGradient(Colours::Red, Shade::Lighter));
-		DrawEquilibrium(plot, 0, x1, y0, y1, _economy.macro_output, _economy.macro_price_index);
+		DrawEquilibrium(plot, 0, x1, y0, y1, _economy.macro_goods_demand != 0 ? _economy.macro_goods_demand : _economy.macro_output, _economy.macro_price_index);
 		DrawString(plot.left, plot.right, plot.top, STR_MACRO_ASAD_LEGEND, TextColour::White);
 	}
 };
@@ -463,7 +557,7 @@ struct MacroLedgerWindow : Window {
 	MacroLedgerWindow(WindowDesc &desc, WindowNumber number) : Window(desc)
 	{
 		this->InitNested(number);
-		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCount(48);
+		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCount(64);
 	}
 
 	const IntervalTimer<TimerGameEconomy> daily_refresh{{TimerGameEconomy::Trigger::Day, TimerGameEconomy::Priority::None}, [this](auto) {
@@ -477,8 +571,8 @@ struct MacroLedgerWindow : Window {
 
 	void OnPaint() override
 	{
-		MacroMonitorRow rows[48];
-		const int count = FillMacroMonitor(rows, 48);
+		MacroMonitorRow rows[64];
+		const int count = FillMacroMonitor(rows, 64);
 		this->GetScrollbar(WID_MDIAG_SCROLL)->SetCount(count * 2);
 		this->DrawWidgets();
 	}
@@ -486,8 +580,8 @@ struct MacroLedgerWindow : Window {
 	void DrawWidget(const Rect &r, WidgetID widget) const override
 	{
 		if (widget != WID_MDIAG_PANEL) return;
-		MacroMonitorRow rows[48];
-		const int count = FillMacroMonitor(rows, 48);
+		MacroMonitorRow rows[64];
+		const int count = FillMacroMonitor(rows, 64);
 		const Rect tr = r.Shrink(WidgetDimensions::scaled.framerect);
 		const int line = GetCharacterHeight(FontSize::Small);
 		const int lines = std::max(1, (tr.bottom - tr.top) / line);

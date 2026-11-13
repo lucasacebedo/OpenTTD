@@ -25,6 +25,7 @@ enum MacroEconomyWidgets : WidgetID {
 	WID_MACRO_S_UP,
 	WID_MACRO_SETTINGS,
 	WID_MACRO_DASHBOARD,
+	WID_MACRO_WORLD,
 };
 
 /** Widgets of the #MacroDashboardWindow class. */
@@ -40,6 +41,15 @@ enum MacroDashboardWidgets : WidgetID {
 	WID_MDASH_ISLM,
 	WID_MDASH_ASAD,
 	WID_MDASH_LEDGER,
+};
+
+/** Widgets of the rest-of-the-world window. */
+enum MacroWorldWidgets : WidgetID {
+	WID_WORLD_PANEL,
+	WID_WORLD_GROWTH_DOWN,
+	WID_WORLD_GROWTH_UP,
+	WID_WORLD_RATE_DOWN,
+	WID_WORLD_RATE_UP,
 };
 
 /** Widgets of the IS-LM diagram, the AS-AD diagram and the variable ledger. */

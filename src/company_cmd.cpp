@@ -113,7 +113,7 @@ Money Company::GetMaxLoan() const
 	if (!_settings_game.economy.islm_enabled || _economy.macro_ok == 0) return base;
 
 	/* Five extra points of interest cut the room for new borrowing by about a sixth. Existing loans are not called in. */
-	const int rate = std::max<int>(_economy.macro_interest_bp, 0) / 100;
+	const int rate = std::max<int>(_economy.macro_loan_rate_bp > 0 ? _economy.macro_loan_rate_bp : _economy.macro_interest_bp, 0) / 100;
 	int64_t ceiling = static_cast<int64_t>(base) * 100 / (100 + 4 * rate);
 	if (ceiling < static_cast<int64_t>(this->current_loan)) ceiling = static_cast<int64_t>(this->current_loan);
 	return static_cast<Money>(ceiling);

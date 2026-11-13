@@ -84,7 +84,7 @@ struct StatusBarWindow : Window {
 		Dimension d;
 		switch (widget) {
 			case WID_S_LEFT:
-				d = GetStringBoundingBox(GetString(STR_JUST_DATE_LONG, GetParamMaxValue(TimerGameCalendar::DateAtStartOfYear(CalendarTime::MAX_YEAR).base())));
+				d = GetStringBoundingBox(GetString(STR_JUST_DATE_LONG, GetParamMaxValue(TimerGameCalendar::DateAtStartOfYear(CalendarTime::MAX_YEAR).base())) + "  x1000");
 				break;
 
 			case WID_S_RIGHT: {
@@ -108,10 +108,17 @@ struct StatusBarWindow : Window {
 		Rect tr = r.Shrink(WidgetDimensions::scaled.framerect, RectPadding::zero);
 		tr.top = CentreBounds(r.top, r.bottom, GetCharacterHeight(FontSize::Normal));
 		switch (widget) {
-			case WID_S_LEFT:
-				/* Draw the date */
-				DrawString(tr, GetString(STR_JUST_DATE_LONG, TimerGameCalendar::date), TextColour::White, AlignmentH::Centre);
+			case WID_S_LEFT: {
+				/* Draw the date and, above 1x, the speed multiplier. */
+				std::string text = GetString(STR_JUST_DATE_LONG, TimerGameCalendar::date);
+				if (_game_speed == 0) {
+					text += "  max";
+				} else if (_game_speed != 100) {
+					text += fmt::format("  x{}", _game_speed / 100);
+				}
+				DrawString(tr, text, TextColour::White, AlignmentH::Centre);
 				break;
+			}
 
 			case WID_S_RIGHT: {
 				if (_local_company == COMPANY_SPECTATOR) {

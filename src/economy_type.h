@@ -59,10 +59,12 @@ struct Economy {
 	 * Flow variables are index points, the same unit as natural output. */
 	int32_t macro_output;                   ///< Equilibrium real output, Y
 	int32_t macro_interest_bp;              ///< Equilibrium nominal interest, hundredths of a percent
+	int32_t macro_loan_rate_bp;             ///< Rate companies pay: Taylor plus the risk premium
 	int32_t macro_inflation_bp;             ///< Phillips-curve inflation, hundredths of a percent per year
 	int32_t macro_expected_inflation_bp;    ///< Adaptive inflation expectation, hundredths of a percent per year
 	int32_t macro_price_index;              ///< Macro price index times 100. 100000 is the base of 1000.00 used to deflate money
-	int32_t macro_output_gap_bp;            ///< (Y - Y*) / Y* in hundredths of a percent
+	int32_t macro_output_gap_bp;            ///< (demand - Y*) / Y* in hundredths of a percent. Taylor, Phillips and cargo use this gap
+	int32_t macro_goods_demand;             ///< Goods demand after money, the interest rate and trade. PIB producción stays measured value added
 	int32_t macro_consumption;              ///< Equilibrium consumption
 	int32_t macro_investment;               ///< Equilibrium investment
 	int32_t macro_tax_revenue;              ///< Equilibrium tax revenue

@@ -1,0 +1,17 @@
+experiment:
+  id: agents-replay
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 5
+  warmup_years: 0
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  provider: replay
+  shocks: []
+  outputs: [agent_strategy, gdp_real, credit]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-10. A recorded decision replays exactly. The provider log redacts secrets. No network client is used.

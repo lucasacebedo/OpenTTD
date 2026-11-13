@@ -234,8 +234,8 @@ static CallBackFunction MenuClickGameSpeed(int index)
 {
 	if (_networking) return CallBackFunction::None;
 	if (index != 100 && index != 1000 && index != 10000 && index != 100000) return CallBackFunction::None;
-	_game_speed = static_cast<uint32_t>(index);
 	if (index != 100) _settings_client.gui.fast_forward_speed_limit = static_cast<uint32_t>(index);
+	SetGameSpeed(static_cast<uint32_t>(index));
 	return CallBackFunction::None;
 }
 
@@ -2087,11 +2087,12 @@ struct MainToolbarWindow : Window {
 			case MTHK_PAUSE: ToolbarPauseClick(this); break;
 			case MTHK_FASTFORWARD:
 				if (!_networking) {
-					if (_game_speed < 1000) _game_speed = 1000;
-					else if (_game_speed < 10000) _game_speed = 10000;
-					else if (_game_speed < 100000) _game_speed = 100000;
-					else _game_speed = 100;
-					if (_game_speed != 100) _settings_client.gui.fast_forward_speed_limit = _game_speed;
+					uint32_t speed = 100;
+					if (_game_speed < 1000) speed = 1000;
+					else if (_game_speed < 10000) speed = 10000;
+					else if (_game_speed < 100000) speed = 100000;
+					if (speed != 100) _settings_client.gui.fast_forward_speed_limit = speed;
+					SetGameSpeed(speed);
 				}
 				break;
 			case MTHK_SETTINGS: ShowGameOptions(); break;
@@ -2319,7 +2320,7 @@ static WindowDesc _toolb_normal_desc(
 
 static MenuClickedProc * const _scen_toolbar_dropdown_procs[] = {
 	nullptr,              // 0
-	nullptr,              // 1
+	MenuClickGameSpeed,   // 1
 	MenuClickSettings,    // 2
 	MenuClickSaveLoad,    // 3
 	nullptr,              // 4

@@ -1,0 +1,21 @@
+experiment:
+  id: dornbusch-money-10
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 40
+  warmup_years: 10
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  shocks:
+    - variable: central_bank.base_money_target
+      effective_period: 2030-01-01
+      effective_tick: 30
+      operation: multiply
+      value: 1.10
+  outputs: [gdp_real, inflation_cpi, policy_rate, fx_nominal, fx_real, current_account, credit, unemployment]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-01. Monetary expansion. The spot rate overshoots and the shock stays in the audit.

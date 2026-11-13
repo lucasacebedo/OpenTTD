@@ -47,6 +47,16 @@ void VideoDriver::GameThread()
 	while (!_exit_game) {
 		this->GameLoop();
 
+		/* Above 1x, run a short burst before handing the lock to the drawer.
+		 * Yielding on every tick let the redraw keep the clock at normal speed. */
+		if (_game_speed != 100) {
+			const int burst = (_game_speed == 0 || _game_speed >= 10000) ? 12 : (_game_speed >= 1000 ? 4 : 1);
+			for (int i = 1; i < burst && !_exit_game; i++) {
+				if (_game_speed != 0 && std::chrono::steady_clock::now() < this->next_game_tick) break;
+				this->GameLoop();
+			}
+		}
+
 		auto now = std::chrono::steady_clock::now();
 		if (this->next_game_tick > now) {
 			std::this_thread::sleep_for(this->next_game_tick - now);

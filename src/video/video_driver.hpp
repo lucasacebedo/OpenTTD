@@ -331,8 +331,9 @@ protected:
 
 		TicToc::Tick("GameTick");
 
-		/* If we are paused, run on normal speed. */
-		if (_pause_mode.Any()) return std::chrono::milliseconds(MILLISECONDS_PER_TICK);
+		/* If we are paused, run on normal speed. A link-graph pause while
+		 * fast-forwarding is about to be cleared and must not stretch the tick. */
+		if (_pause_mode.Any() && !(_game_speed != 100 && _pause_mode == PauseMode::LinkGraph)) return std::chrono::milliseconds(MILLISECONDS_PER_TICK);
 		/* Infinite speed, as quickly as you can. */
 		if (_game_speed == 0) return std::chrono::microseconds(0);
 
@@ -344,8 +345,12 @@ protected:
 		TicToc::Tick("DrawTick");
 
 		/* If vsync, draw interval is decided by the display driver */
-		if (_video_vsync && this->uses_hardware_acceleration) return std::chrono::microseconds(0);
-		return std::chrono::microseconds(1000000 / _settings_client.gui.refresh_rate);
+		uint factor = 1;
+		if (_game_speed != 100 && !_pause_mode.Any()) {
+			factor = (_game_speed == 0 || _game_speed >= 10000) ? 4 : (_game_speed >= 1000 ? 2 : 1);
+		}
+		if (factor == 1 && _video_vsync && this->uses_hardware_acceleration) return std::chrono::microseconds(0);
+		return std::chrono::microseconds(1000000 / _settings_client.gui.refresh_rate) * factor;
 	}
 
 	/** Execute all queued commands. */

@@ -48,10 +48,10 @@ using PolicyPoints = Quantity<Unit::PolicyPoints>;
 using RateBp = Quantity<Unit::RateBp>;
 
 /** Conversion version recorded in docs/model/variables.yaml. */
-static constexpr int ECONOMYLAB_CONVERSION_VERSION = 1;
+static constexpr int ECONOMYLAB_CONVERSION_VERSION = 2;
 
-/** One policy point is 1,000 base-year pounds. Versioned; do not fold it into another formula. */
-static constexpr int64_t POLICY_POINT_TO_REAL_POUNDS = 1000;
+/** 1000 policy points equal the calibrated real GDP passed by the caller. */
+static constexpr int64_t POLICY_POINTS_PER_CALIBRATED_GDP = 1000;
 
 /** Payment index that means "no inflation since 1920". */
 static constexpr int64_t PAYMENT_INDEX_BASE = 1 << 16;
@@ -70,9 +70,10 @@ constexpr RealPounds DeflatePounds(NominalPounds nominal, int64_t payment_index)
 	return RealPounds{whole * PAYMENT_INDEX_BASE + rest * PAYMENT_INDEX_BASE / payment_index};
 }
 
-constexpr RealPounds PolicyToReal(PolicyPoints points)
+constexpr RealPounds PolicyPointsToReal(PolicyPoints points, RealPounds calibrated_gdp)
 {
-	return RealPounds{points.Raw() * POLICY_POINT_TO_REAL_POUNDS};
+	if (points.Raw() == 0 || calibrated_gdp.Raw() <= 0) return RealPounds{0};
+	return RealPounds{points.Raw() * calibrated_gdp.Raw() / POLICY_POINTS_PER_CALIBRATED_GDP};
 }
 
 static_assert(!std::is_same_v<RealPounds, CargoPieces>);
@@ -80,6 +81,6 @@ static_assert(!std::is_same_v<RealPounds, NominalPounds>);
 static_assert(!std::is_same_v<RealPounds, PolicyPoints>);
 static_assert((RealPounds{3} + RealPounds{4}).Raw() == 7);
 static_assert(DeflatePounds(NominalPounds{PAYMENT_INDEX_BASE}, PAYMENT_INDEX_BASE).Raw() == PAYMENT_INDEX_BASE);
-static_assert(PolicyToReal(PolicyPoints{2}).Raw() == 2 * POLICY_POINT_TO_REAL_POUNDS);
+static_assert(PolicyPointsToReal(PolicyPoints{1000}, RealPounds{5000}).Raw() == 5000);
 
 #endif /* ECONOMYLAB_UNITS_HPP */

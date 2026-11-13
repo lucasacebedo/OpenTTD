@@ -1,0 +1,18 @@
+id: emerging_small_open_v1
+model_version: economy-lab/1.0
+date: 2026-11-10
+seed: 872193
+distribution: degenerate
+source: integer baseline of economy-lab/1.0
+values:
+  gdp: 10000
+  money: 10000
+  price: 10000
+  policy_rate_bp: 400
+  exchange: 9800
+  debt: 0
+  world_rate_bp: 200
+  risk_bp: 100
+  loans: 4000
+  deposits: 4800
+  equity: 200

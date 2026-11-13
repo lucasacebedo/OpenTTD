@@ -15,7 +15,7 @@ E-006:
 
 E-007:
   text: "GDP_expenditure = consumption + investment + government + X - M"
-  note: "Consumption is passenger and mail tariffs. Investment is construction and new vehicles. Government is the purchase slider: 1000 points equal calibrated GDP. X and M come from the real exchange rate."
+  note: "Consumption is worker consumption plus owner consumption plus autonomous consumption plus the real-balance effect. Investment is construction plus autonomous investment plus the interest-rate effect. The discrepancy is production minus this same expenditure. Government is the purchase slider. X and M follow rest-of-world GDP, local GDP, the real dollar and the terms of trade."
 
 E-008:
   text: "discrepancy = GDP_production - GDP_expenditure"
@@ -30,15 +30,19 @@ E-032:
   note: "r* and pi_target are 2 percent. The stored policy rate is clamped to 0..25 percent. The loan rate adds the risk premium."
 
 E-044:
-  text: "X = trade_base * real_exchange / 10000"
-  note: "trade_base is one tenth of calibrated GDP. The real exchange rate is spot times the foreign price over the domestic price, with 10000 = 1."
+  text: "X = trade_base * world_gdp * real_dollar * terms_of_trade"
+  note: "trade_base is one tenth of calibrated GDP. world_gdp starts at 100 and grows at the panel rate, 2.50 percent a year. The real dollar is pesos per dollar adjusted by the price index."
 
 E-045:
-  text: "M = trade_base * (GDP / potential) * 10000 / real_exchange"
+  text: "M = trade_base * (local GDP / calibrated GDP) / real_dollar / terms_of_trade"
 
 E-053:
-  text: "spot = fundamental * (1 - 2*(i - i* - rho))"
-  note: "i* is 2 percent. rho is 1 percent plus debt/GDP. A higher policy rate appreciates the currency. The fundamental crawls one twenty-fourth toward purchasing-power parity."
+  text: "spot = fundamental * (1 - 2*(i - i* - rho)) * (1 + expected depreciation / 12)"
+  note: "i* is the world-rate setting, 2 percent unless the panel changes it. rho is 1 percent plus public debt over GDP plus last month's unfunded-deficit premium. Expected depreciation is the current-account gap plus last month's gap between desired external bonds and that account. That pressure is stored and moves the next dollar. Net foreign assets equal minus the external-bond stock."
+
+dividends:
+  text: "dividends = payout * max(profit - interest, 0)"
+  note: "Profit is GDP minus the wage share. Interest deducted is the loan rate, policy plus the risk premium. Shareholders consume a small share and save the rest. Saving enters bank deposits. Money demand takes its slice. Public bonds are bought out of deposits. What the public sector cannot place raises next month's risk premium. The external slice raises next month's expected depreciation."
 
 bridge_unemployment:
   text: "u = 5% - gap/2"

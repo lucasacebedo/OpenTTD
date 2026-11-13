@@ -740,6 +740,11 @@ SettingsContainer &GetSettingsTree()
 				macro->Add(new SettingEntry("economy.islm_expectation_adaptation_percent"));
 				macro->Add(new SettingEntry("economy.islm_payment_inflation_percent"));
 				macro->Add(new SettingEntry("economy.islm_output_gap_cargo_link"));
+				macro->Add(new SettingEntry("economy.islm_world_growth_bp"));
+				macro->Add(new SettingEntry("economy.islm_world_interest_bp"));
+				macro->Add(new SettingEntry("economy.islm_wage_share_percent"));
+				macro->Add(new SettingEntry("economy.islm_dividend_payout_percent"));
+				macro->Add(new SettingEntry("economy.islm_owner_mpc_percent"));
 			}
 		}
 

@@ -14,6 +14,7 @@
 #include "mcf.h"
 #include "flowmapper.h"
 #include "../framerate_type.h"
+#include "../gfx_func.h"
 #include "../command_func.h"
 #include "../network/network.h"
 #include "../misc_cmd.h"
@@ -32,7 +33,7 @@
  */
 void LinkGraphSchedule::SpawnNext()
 {
-	if (this->schedule.empty()) return;
+	if (this->schedule.empty() || !this->running.empty()) return;
 	LinkGraph *next = this->schedule.front();
 	LinkGraph *first = next;
 	while (next->Size() < 2) {
@@ -70,6 +71,8 @@ void LinkGraphSchedule::JoinNext()
 	if (this->running.empty()) return;
 	LinkGraphJob *next = this->running.front();
 	if (!next->IsScheduledToBeJoined()) return;
+	/* Joining waits for the worker. Above 1x that wait cancelled the speed-up, so leave it running. */
+	if (!next->IsJobCompleted() && _game_speed != 100) return;
 	this->running.pop_front();
 	LinkGraphID id = next->LinkGraphIndex();
 	delete next; // implicitly joins the thread
@@ -168,6 +171,14 @@ LinkGraphSchedule::~LinkGraphSchedule()
  */
 void StateGameLoop_LinkGraphPauseControl()
 {
+	/* A link-graph job can take longer than a game day on a large map. Pausing
+	 * until it finishes keeps the clock at normal speed no matter which
+	 * multiplier is selected, and a higher multiplier reaches the next job sooner. */
+	if (_game_speed != 100) {
+		if (_pause_mode.Test(PauseMode::LinkGraph)) Command<Commands::Pause>::Post(PauseMode::LinkGraph, false);
+		return;
+	}
+
 	if (_pause_mode.Test(PauseMode::LinkGraph)) {
 		/* We are paused waiting on a job, check the job every tick. */
 		if (!LinkGraphSchedule::instance.IsJoinWithUnfinishedJobDue()) {

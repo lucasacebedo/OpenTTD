@@ -11,7 +11,9 @@
 
 #include "macro_economy.h"
 #include "economylab/accounts.h"
+#include "economylab/laboratory.hpp"
 #include "company_base.h"
+#include "company_func.h"
 #include "economy_func.h"
 #include "rail.h"
 #include "road.h"
@@ -38,12 +40,13 @@
  * It is not a sum of cargo pieces. Passenger and mail tariffs are consumption.
  * Other tariffs are intermediate purchases. Construction and new vehicles are
  * investment. Maintenance is intermediate consumption. Government purchases are
- * the purchase slider converted at POLICY_POINT_TO_REAL_POUNDS. The gap between
+ * the purchase slider converted at 1000 points = calibrated real GDP. The gap between
  * production and expenditure is stored and shown; it is not written into consumption.
  *
  * The policy rate is the Taylor rule E-032. The loan rate charged to companies
  * is the non-negative policy rate. Potential output follows the integer form of
- * E-027 and is calibrated once. It is not copied from GDP when the two differ.
+ * E-027. If GDP leaves the range that function can express, the month reports a
+ * calibration error and does not copy GDP into potential. Policy points stay on the calibration scale.
  */
 
 static constexpr int64_t MACRO_PRICE_SCALE = 100; ///< Stored price index is the displayed index times this.
@@ -77,6 +80,12 @@ static int32_t ClampI32(int64_t value, int64_t lower, int64_t upper)
 	return static_cast<int32_t>(value);
 }
 
+/** Gap that the Phillips curve and the Taylor rule are allowed to see. The panel still shows the full gap. */
+static int32_t CycleGapBp(int32_t gap_bp)
+{
+	return ClampI32(gap_bp, -2000, 2000);
+}
+
 static int32_t RoundHundredthsToPercent(int32_t hundredths)
 {
 	if (hundredths >= 0) return (hundredths + 50) / 100;
@@ -102,23 +111,18 @@ static int32_t TaylorRateBp(int32_t inflation_bp, int32_t gap_bp)
 	return ClampI32(rate, 0, 2500);
 }
 
-/** Publish one monthly close. Consumption is measured; the discrepancy is kept apart. */
-static IsLmResult PublishAccounts(const EconomyLabAccounts &accounts, int32_t price_index)
+/** Publish one monthly close. Production stays measured. The gap is goods demand against potential. */
+static IsLmResult PublishAccounts(const EconomyLabAccounts &accounts, int32_t interest_bp, int64_t demand, int64_t real_money, int64_t money_demand)
 {
-	const EconomySettings &cfg = _settings_game.economy;
 	IsLmResult result;
 	constexpr int64_t kShown = 2000000000;
 
 	const int64_t output = accounts.gdp_production;
 	const int64_t potential = accounts.potential;
 	int32_t gap_bp = 0;
-	if (potential > 0) gap_bp = ClampI32((output - potential) * 10000 / potential, -10000, 10000);
-
-	const int32_t inflation_bp = PhillipsInflation(_economy.macro_expected_inflation_bp, gap_bp);
-	const int32_t interest_bp = TaylorRateBp(inflation_bp, gap_bp);
+	if (potential > 0) gap_bp = ClampI32((demand - potential) * 10000 / potential, -100000, 100000);
+	const int32_t cycle_bp = CycleGapBp(gap_bp);
 	const int64_t yield_bp = std::max<int32_t>(interest_bp, 1);
-	const int64_t price = std::clamp<int64_t>(price_index, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
-	const int64_t real_money = static_cast<int64_t>(cfg.islm_money_supply) * 1000 * MACRO_PRICE_SCALE / price;
 
 	result.ok = accounts.ledger_balanced;
 	result.output = ClampI32(output, -kShown, kShown);
@@ -127,13 +131,13 @@ static IsLmResult PublishAccounts(const EconomyLabAccounts &accounts, int32_t pr
 	result.investment = ClampI32(accounts.investment, 0, kShown);
 	result.tax_revenue = ClampI32(accounts.tax_revenue, 0, kShown);
 	result.real_money = ClampI32(real_money, 0, kShown);
-	result.money_demand = 0;
+	result.money_demand = ClampI32(money_demand, 0, kShown);
 	result.game_output = ClampI32(accounts.logistics_pieces, 0, kShown);
 	result.exogenous_output = ClampI32(accounts.discrepancy, -kShown, kShown);
 	result.debt_price = ClampI32(500 * 1000 / yield_bp, 1, kShown);
 	result.output_gap_bp = gap_bp;
-	/* Bridge until the labour module. A one-point boom cuts unemployment by half a point. */
-	result.unemployment_bp = ClampI32(MACRO_OKUN_NATURAL_BP - gap_bp / 2, 0, 5000);
+	/* A one-point boom cuts unemployment by half a point. Only the cycle, not a stale level, moves it. */
+	result.unemployment_bp = ClampI32(MACRO_OKUN_NATURAL_BP - cycle_bp / 2, 0, 5000);
 	result.leakage = 0;
 	return result;
 }
@@ -212,6 +216,7 @@ static void PublishMacroState()
 	InvalidateWindowData(WindowClass::MacroIsLmGraph, 0);
 	InvalidateWindowData(WindowClass::MacroAsAdGraph, 0);
 	InvalidateWindowData(WindowClass::MacroLedger, 0);
+	InvalidateWindowData(WindowClass::MacroWorld, 0);
 	InvalidateWindowClassesData(WindowClass::Finances);
 }
 
@@ -301,13 +306,33 @@ static GameFlows MeasureGameFlows(bool close_month)
 
 static void UpdateCargoPotential();
 
-/** Refresh the population and cargo capacity the window shows. Does not move potential output. */
+/** The window reads the last published month. Drawing it does not measure, solve or reanchor. */
 void MacroEconomyObserve()
 {
-	if (_generating_world || _game_mode == GameMode::Menu || !_settings_game.economy.islm_enabled) return;
+}
 
-	_economy.macro_population = TownPopulation();
-	_economy.macro_cargo_capacity = InstalledCargoCapacity();
+int MacroCalibrationError()
+{
+	if (_economy.macro_ok == 0 || _economy.macro_natural_output <= 0 || _economy.macro_output <= 0) return 0;
+	const int64_t ratio = static_cast<int64_t>(_economy.macro_output) * 10000 / _economy.macro_natural_output;
+	return (ratio < 5000 || ratio > 22000) ? 1 : 0;
+}
+
+int MacroClampCount()
+{
+	int count = 0;
+	if (_economy.macro_output_gap_bp > 2000 || _economy.macro_output_gap_bp < -2000) count++;
+	if (_economy.macro_inflation_bp >= 10000) count++;
+	if (_economy.macro_interest_bp >= 2500) count++;
+	if (_economy.macro_price_index >= MACRO_MAX_PRICE) count++;
+	return count;
+}
+
+int MacroRunQuality()
+{
+	const EconomyLabOpen &open = EconomyLabOpenState();
+	const int64_t unexplained = open.identity_ok ? 0 : open.discrepancy;
+	return lab::RunQuality(open.identity_ok ? 0 : unexplained, MacroCalibrationError(), MacroClampCount(), open.bank_gap + open.treasury_gap + open.cb_gap + open.external_gap);
 }
 
 /**
@@ -517,6 +542,54 @@ int32_t MacroHistoryValue(int series, int age)
 	return bank[slot * MACRO_HISTORY_MONTHS + (count - 1 - age)];
 }
 
+/** Move the month's fiscal, trade and dividend flows through company cash. The transfer is capped so one month cannot empty the firms. */
+static void SettleBehaviorWithCompanies(int64_t payment_index)
+{
+	if (_settings_game.difficulty.infinite_money) return;
+	const EconomyLabPersistent &lab = EconomyLabPersistentState();
+	const int64_t net_real = static_cast<int64_t>(_economy.macro_government) - _economy.macro_tax_revenue + lab.exports - lab.imports - lab.dividends;
+	if (net_real == 0) return;
+	if (payment_index < 1) payment_index = 65536;
+	int64_t nominal = net_real * payment_index / 65536;
+	if (nominal == 0) return;
+
+	int64_t cash = 0;
+	int64_t weight_total = 0;
+	int companies = 0;
+	for (const Company *company : Company::Iterate()) {
+		const int64_t money = static_cast<int64_t>(company->money);
+		if (money > 0) cash += money;
+		int64_t revenue = 0;
+		revenue -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::TrainRevenue]);
+		revenue -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::RoadVehRevenue]);
+		revenue -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::AircraftRevenue]);
+		revenue -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::ShipRevenue]);
+		if (revenue < 0) revenue = 0;
+		weight_total += revenue;
+		companies++;
+	}
+	if (companies == 0) return;
+	const int64_t cap = cash / 5;
+	if (cap > 0) {
+		if (nominal > cap) nominal = cap;
+		if (nominal < -cap) nominal = -cap;
+	}
+	if (weight_total <= 0) weight_total = companies;
+
+	for (Company *company : Company::Iterate()) {
+		int64_t weight = 0;
+		weight -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::TrainRevenue]);
+		weight -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::RoadVehRevenue]);
+		weight -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::AircraftRevenue]);
+		weight -= static_cast<int64_t>(company->yearly_expenses[0][ExpensesType::ShipRevenue]);
+		if (weight <= 0) weight = weight_total == companies ? 1 : 0;
+		if (weight <= 0) continue;
+		const int64_t share = nominal * weight / weight_total;
+		if (share == 0) continue;
+		SubtractMoneyFromCompany(company->index, CommandCost(ExpensesType::Other, -share));
+	}
+}
+
 static void RecalculateMacroEconomy(bool advance_prices)
 {
 	if (_economy.macro_price_index <= 0) {
@@ -536,12 +609,39 @@ static void RecalculateMacroEconomy(bool advance_prices)
 	lab_flows.tax_rate_percent = _settings_game.economy.islm_tax_rate_percent;
 	lab_flows.autonomous_tax_points = _settings_game.economy.islm_autonomous_tax;
 	lab_flows.population = _economy.macro_population;
+	lab_flows.unemployment_bp = _economy.macro_ok != 0 ? _economy.macro_unemployment_bp : 500;
 	lab_flows.capacity = _economy.macro_cargo_capacity;
 	lab_flows.capital_stock = _economy.macro_capital;
 	lab_flows.payment_index = static_cast<int64_t>(std::max<uint64_t>(_economy.inflation_payment, static_cast<uint64_t>(PAYMENT_INDEX_BASE)));
 
 	const EconomyLabAccounts accounts = EconomyLabCloseMonth(lab_flows, advance_prices);
-	if (advance_prices) _economy.macro_subsidy_pounds = 0;
+	if (EconomyLabPersistentState().anchored != 0) _economy.macro_anchor_set = 1;
+	if (advance_prices) {
+		_economy.macro_subsidy_pounds = 0;
+		EconomyLabAdvanceWorld(TimerGameEconomy::date.base(), _economy.macro_price_index);
+	}
+	int32_t rate_bp = _economy.macro_interest_bp > 0 ? _economy.macro_interest_bp : 400;
+	int32_t inflation_now = _economy.macro_expected_inflation_bp;
+	EconomyLabDemand priced{};
+	bool settled = false;
+	for (int pass = 0; pass < 8; pass++) {
+		priced = EconomyLabPreviewDemand(accounts, rate_bp, _economy.macro_price_index, _economy.macro_debt);
+		int32_t gap_bp = 0;
+		if (accounts.potential > 0) gap_bp = ClampI32((priced.demand - accounts.potential) * 10000 / accounts.potential, -100000, 100000);
+		inflation_now = PhillipsInflation(_economy.macro_expected_inflation_bp, CycleGapBp(gap_bp));
+		const int32_t next = TaylorRateBp(inflation_now, CycleGapBp(gap_bp));
+		if (next == rate_bp) {
+			settled = true;
+			break;
+		}
+		rate_bp = next;
+	}
+	if (!settled) {
+		priced = EconomyLabPreviewDemand(accounts, rate_bp, _economy.macro_price_index, _economy.macro_debt);
+		int32_t gap_bp = 0;
+		if (accounts.potential > 0) gap_bp = ClampI32((priced.demand - accounts.potential) * 10000 / accounts.potential, -100000, 100000);
+		inflation_now = PhillipsInflation(_economy.macro_expected_inflation_bp, CycleGapBp(gap_bp));
+	}
 	if (accounts.reset_legacy_capital) _economy.macro_capital = 0;
 	if (accounts.recalibrate) {
 		const int32_t restart = _settings_game.economy.islm_initial_expected_inflation * 100;
@@ -557,10 +657,14 @@ static void RecalculateMacroEconomy(bool advance_prices)
 	}
 
 	const int64_t debt_before = _economy.macro_debt;
-	const IsLmResult result = PublishAccounts(accounts, _economy.macro_price_index);
-	const int32_t inflation_bp = result.ok ? PhillipsInflation(_economy.macro_expected_inflation_bp, result.output_gap_bp) : _economy.macro_inflation_bp;
+	const int32_t solved_price = _economy.macro_price_index;
+	const IsLmResult result = PublishAccounts(accounts, rate_bp, priced.demand, priced.real_money, priced.money_demand);
+	const int32_t inflation_bp = result.ok ? inflation_now : _economy.macro_inflation_bp;
 	StoreEquilibrium(result, inflation_bp);
 	if (result.ok) {
+		_economy.macro_goods_demand = ClampI32(priced.demand, -2000000000, 2000000000);
+		_economy.macro_consumption = ClampI32(priced.consumption, -2000000000, 2000000000);
+		_economy.macro_investment = ClampI32(priced.investment, -2000000000, 2000000000);
 		_economy.macro_company_investment = result.investment;
 		_economy.macro_government = ClampI32(accounts.government, 0, 2000000000);
 		_economy.macro_natural_output = ClampI32(accounts.potential, 0, 2000000000);
@@ -570,11 +674,14 @@ static void RecalculateMacroEconomy(bool advance_prices)
 		}
 	}
 	if (result.ok && advance_prices) {
-		AdvancePhillipsCurve(inflation_bp);
 		UpdatePublicDebt(result, _economy.macro_government);
 		int64_t loans = 0;
 		for (const Company *company : Company::Iterate()) loans += static_cast<int64_t>(company->current_loan);
-		const EconomyLabOpen open = EconomyLabApplyOpenEconomy(accounts, result.interest_bp, _economy.macro_price_index, _economy.macro_debt, loans, _economy.macro_population, result.unemployment_bp);
+		const EconomyLabOpen open = EconomyLabApplyOpenEconomy(accounts, result.interest_bp, solved_price, _economy.macro_debt, loans, _economy.macro_population, result.unemployment_bp);
+		_economy.macro_loan_rate_bp = open.loan_rate_bp;
+		if (!_generating_world) SettleBehaviorWithCompanies(static_cast<int64_t>(std::max<uint64_t>(_economy.inflation_payment, static_cast<uint64_t>(65536))));
+		AdvancePhillipsCurve(inflation_bp);
+		if (!open.identity_ok) _economy.macro_ok = 0;
 		_economy.macro_exogenous_output = ClampI32(open.discrepancy, -2000000000, 2000000000);
 		const int charged = std::clamp(open.loan_rate_bp / 100, 0, 255);
 		_economy.interest_rate = static_cast<uint8_t>(charged);
@@ -588,6 +695,7 @@ static void ClearMacroState()
 	_economy.macro_price_index = 0;
 	_economy.macro_output = 0;
 	_economy.macro_interest_bp = 0;
+	_economy.macro_loan_rate_bp = 0;
 	_economy.macro_inflation_bp = 0;
 	_economy.macro_expected_inflation_bp = 0;
 	_economy.macro_output_gap_bp = 0;
@@ -615,6 +723,7 @@ static void ClearMacroState()
 	_economy.macro_game_output = 0;
 	_economy.macro_exogenous_output = 0;
 	_economy.macro_money_demand = 0;
+	_economy.macro_goods_demand = 0;
 	_economy.macro_demand_anchor = 0;
 	_economy.macro_game_anchor = 0;
 	_economy.macro_anchor_set = 0;
@@ -719,12 +828,13 @@ uint MacroActivityPermyriad()
 	if (_game_mode == GameMode::Menu || !_settings_game.economy.islm_enabled || _economy.macro_ok == 0) return 10000;
 
 	const int64_t link = _settings_game.economy.islm_output_gap_cargo_link;
-	const int64_t permyriad = 10000 + static_cast<int64_t>(_economy.macro_output_gap_bp) * link / 100;
+	const int64_t permyriad = 10000 + static_cast<int64_t>(CycleGapBp(_economy.macro_output_gap_bp)) * link / 100;
 	return static_cast<uint>(std::clamp<int64_t>(permyriad, 5000, 20000));
 }
 
 uint MacroTownIncentivePermyriad(bool growing, uint16_t growth_rate)
 {
+	if (!_settings_game.economy.islm_enabled || _economy.macro_ok == 0) return 10000;
 	if (!growing) return 10000;
 	/* A smaller counter means the town builds the next house sooner. */
 	if (growth_rate == 0 || growth_rate >= 4000) return 13000;
@@ -734,39 +844,51 @@ uint MacroTownIncentivePermyriad(bool growing, uint16_t growth_rate)
 
 uint MacroIndustryIncentivePermyriad(int production_level)
 {
+	if (!_settings_game.economy.islm_enabled || _economy.macro_ok == 0) return 10000;
 	constexpr int born = 16;
 	if (production_level <= born) return 10000;
 	const int extra = (production_level - born) * 10000 / born;
 	return static_cast<uint>(std::clamp(10000 + extra, 10000, 20000));
 }
 
+static EconomyLabAccounts AccountsFromPublished()
+{
+	EconomyLabAccounts accounts;
+	accounts.gdp_production = _economy.macro_output;
+	accounts.consumption = _economy.macro_consumption;
+	accounts.investment = _economy.macro_investment;
+	accounts.government = _economy.macro_government;
+	accounts.potential = _economy.macro_natural_output;
+	accounts.ok = _economy.macro_ok != 0;
+	return accounts;
+}
+
 int32_t MacroOutputAtInterest(int32_t interest_bp)
 {
-	const int64_t potential = std::max<int32_t>(_economy.macro_natural_output, 1);
-	const int64_t neutral = TaylorNeutralBp(_economy.macro_inflation_bp);
-	constexpr int64_t phi_y = 50;
-	const int64_t gap_bp = (static_cast<int64_t>(interest_bp) - neutral) * 100 / phi_y;
-	return ClampI32(potential * (10000 + gap_bp) / 10000, 0, 2000000000);
+	const int32_t price = _economy.macro_price_index > 0 ? _economy.macro_price_index : 100000;
+	const EconomyLabDemand priced = EconomyLabPreviewDemand(AccountsFromPublished(), interest_bp, price, _economy.macro_debt);
+	return ClampI32(priced.demand, 0, 2000000000);
 }
 
 int32_t MacroInterestAtOutput(int32_t output)
 {
-	const int64_t potential = std::max<int32_t>(_economy.macro_natural_output, 1);
-	const int32_t gap_bp = ClampI32((static_cast<int64_t>(output) - potential) * 10000 / potential, -10000, 10000);
-	return TaylorRateBp(_economy.macro_inflation_bp, gap_bp);
+	const int32_t price = _economy.macro_price_index > 0 ? _economy.macro_price_index : 100000;
+	return EconomyLabRateAtOutput(output, price);
 }
 
-int32_t MacroOutputAtPrice(int32_t)
+int32_t MacroOutputAtPrice(int32_t price_index)
 {
-	/* Measured GDP is already realised this month. The price index does not rewrite it. */
-	return _economy.macro_output;
+	const int32_t rate = _economy.macro_interest_bp > 0 ? _economy.macro_interest_bp : 400;
+	const EconomyLabDemand priced = EconomyLabPreviewDemand(AccountsFromPublished(), rate, price_index, _economy.macro_debt);
+	return ClampI32(priced.demand, 0, 2000000000);
 }
 
 int32_t MacroPriceAtOutput(int32_t output)
 {
 	const int64_t natural = std::max<int32_t>(_economy.macro_natural_output, 1);
 	const int64_t slope = _settings_game.economy.islm_phillips_slope_percent;
-	const int64_t price = static_cast<int64_t>(_economy.macro_price_index) + static_cast<int64_t>(_economy.macro_price_index) * slope * (static_cast<int64_t>(output) - _economy.macro_output) / natural / 100;
+	const int64_t anchor = _economy.macro_goods_demand != 0 ? _economy.macro_goods_demand : _economy.macro_output;
+	const int64_t price = static_cast<int64_t>(_economy.macro_price_index) + static_cast<int64_t>(_economy.macro_price_index) * slope * (static_cast<int64_t>(output) - anchor) / natural / 100;
 	return ClampI32(price, MACRO_MIN_PRICE, MACRO_MAX_PRICE);
 }
 
@@ -802,10 +924,19 @@ int FillMacroMonitor(MacroMonitorRow *rows, int capacity)
 	const MacroMonitorRow table[] = {
 		{"PIB producción", "libras de 1920 · flujo · mes · E-006 · valor agregado del transporte", _economy.macro_output, 0},
 		{"PIB potencial", "libras de 1920 · stock · mes · E-027 · calibrado una vez", _economy.macro_natural_output, 0},
-		{"Brecha", "tasa · stock · mes · (Y-Y*)/Y* · cuentas", _economy.macro_output_gap_bp, 1},
-		{"Discrepancia", "libras de 1920 · flujo · mes · E-008 · producción menos gasto", _economy.macro_exogenous_output, 0},
-		{"Consumo", "libras de 1920 · flujo · mes · E-007 · pasajeros y correo", _economy.macro_consumption, 0},
-		{"Inversión", "libras de 1920 · flujo · mes · E-007 · construcción y vehículos", _economy.macro_investment, 0},
+		{"Brecha", "tasa · stock · mes · (demanda − potencial) / potencial · Taylor y Phillips", _economy.macro_output_gap_bp, 1},
+		{"Demanda de bienes", "libras de 1920 · flujo · mes · consumo + inversión + gasto público + exportaciones − importaciones", _economy.macro_goods_demand, 0},
+		{"Discrepancia", "libras de 1920 · flujo · mes · E-008 · producción menos esa misma demanda", _economy.macro_exogenous_output, 0},
+		{"Consumo", "libras de 1920 · flujo · mes · asalariados, accionistas, consumo autónomo y saldo real", _economy.macro_consumption, 0},
+		{"Salarios", "libras de 1920 · flujo · mes · parte del PIB que va a los asalariados", open.wages, 0},
+		{"Dividendos", "libras de 1920 · flujo · mes · beneficio repartido a los accionistas", open.dividends, 0},
+		{"Consumo de accionistas", "libras de 1920 · flujo · mes · propensión baja sobre los dividendos", open.owner_consumption, 0},
+		{"Ahorro de los hogares", "libras de 1920 · flujo · mes · lo que no se consume, sobre todo de los accionistas", open.household_saving, 0},
+		{"Ahorro en dinero", "libras de 1920 · flujo · mes · cierra la demanda de dinero", open.portfolio_money, 0},
+		{"Ahorro en bonos privados", "libras de 1920 · flujo · mes · queda en los depósitos y financia los préstamos", open.portfolio_private, 0},
+		{"Ahorro en bonos públicos", "libras de 1920 · flujo · mes · financia el déficit", open.portfolio_public, 0},
+		{"Ahorro en bonos externos", "libras de 1920 · flujo · mes · paridad de intereses", open.portfolio_external, 0},
+		{"Inversión", "libras de 1920 · flujo · mes · construcción, inversión autónoma y el efecto de la tasa", _economy.macro_investment, 0},
 		{"Compras públicas", "libras de 1920 · flujo · mes · E-007 · 1000 puntos = PIB calibrado", _economy.macro_government, 0},
 		{"Impuestos", "libras de 1920 · flujo · mes · E-030 · tipo y impuesto autónomo", _economy.macro_tax_revenue, 0},
 		{"Subsidios", "libras de 1920 · flujo · mes · E-006 · transferencia, no es consumo público", _economy.macro_subsidy_game, 0},
@@ -813,8 +944,8 @@ int FillMacroMonitor(MacroMonitorRow *rows, int capacity)
 		{"Importaciones", "libras de 1920 · flujo · mes · E-045 · actividad y tipo de cambio", open.imports, 0},
 		{"Volumen físico", "piezas · flujo · mes · sin ecuación de valor · no es PIB", _economy.macro_game_output, 0},
 		{"Tasa de política", "tasa anual · stock · mes · E-032 · Taylor", _economy.macro_interest_bp, 1},
-		{"Tasa de préstamo", "tasa anual · stock · mes · E-038 · política más prima", open.loan_rate_bp, 1},
-		{"Tasa mundial", "tasa anual · exógena · mes · E-051 · 2%", open.world_rate_bp, 1},
+		{"Tasa de préstamo", "tasa anual · stock · mes · la que se cobra: Taylor más la prima", open.loan_rate_bp, 1},
+		{"Tasa mundial", "tasa anual · exógena · mes · la pagan los bonos externos", open.world_rate_bp, 1},
 		{"Prima de riesgo", "tasa anual · stock · mes · E-049 · deuda sobre PIB", open.risk_bp, 1},
 		{"Inflación", "tasa anual · flujo · mes · Phillips · brecha y expectativas", _economy.macro_inflation_bp, 1},
 		{"Inflación esperada", "tasa anual · stock · mes · expectativas adaptativas", _economy.macro_expected_inflation_bp, 1},
@@ -822,22 +953,29 @@ int FillMacroMonitor(MacroMonitorRow *rows, int capacity)
 		{"Población", "personas · stock · mes · pueblos", _economy.macro_population, 0},
 		{"Fuerza de trabajo", "personas · stock · mes · E-020 · 45% de la población", open.labour_force, 0},
 		{"Empleo", "personas · stock · mes · E-022 · fuerza por uno menos desempleo", open.employment, 0},
-		{"Tipo de cambio", "índice · stock · mes · E-053 · 100 es el inicio", open.exchange_pm, 2},
+		{"Dólar US", "pesos por dólar · stock · mes · 10000 es 100 · sube cuando el peso se deprecia", open.exchange_pm, 2},
 		{"Cambio fundamental", "índice · stock · mes · E-052 · paridad de largo plazo", open.fundamental_pm, 2},
-		{"Overshooting", "indicador · stock · mes · E-053 · 1 si el spot supera al fundamental", open.overshooting ? 1 : 0, 0},
+		{"Overshooting", "indicador · stock · mes · E-053 · 1 si el dólar spot supera al fundamental", open.overshooting ? 1 : 0, 0},
+		{"PIB del resto del mundo", "índice · stock · mes · 10000 es 100 · crece a la tasa del panel exterior", open.world_gdp_pm, 0},
+		{"Términos de intercambio", "índice · stock · mes · 10000 es paridad · tendencia plana y onda de ±5%", open.terms_of_trade_pm, 0},
+		{"Devaluación esperada", "tasa anual · flujo · mes · cuenta corriente más la presión de los bonos externos del mes pasado", open.expected_devaluation_bp, 1},
+		{"Bonos externos", "libras de 1920 · stock · mes · posición neta con el resto del mundo. Igual a menos la NFA", open.external_debt, 0},
 		{"Deuda pública", "libras de 1920 · stock · mes · E-031 · bonos del Tesoro", _economy.macro_debt, 0},
 		{"Interés de la deuda", "libras de 1920 · flujo · mes · cupón pactado", _economy.macro_debt_service, 0},
 		{"Préstamos bancarios", "libras de 1920 · stock · mes · E-035 · deuda de las compañías", open.bank_loans, 0},
 		{"Depósitos", "libras de 1920 · stock · mes · E-034 · ahorro acumulado", open.bank_deposits, 0},
 		{"Reservas bancarias", "libras de 1920 · stock · mes · E-033 · 10% de los depósitos", open.bank_reserves, 0},
 		{"Bonos en bancos", "libras de 1920 · stock · mes · E-035 · tenencia del Tesoro", open.bank_bonds, 0},
-		{"Capital bancario", "libras de 1920 · stock · mes · E-035 · activo menos depósitos", open.bank_equity, 0},
-		{"Hueco bancario", "libras de 1920 · stock · mes · E-035 · debe ser cero", open.bank_gap, 0},
+		{"Capital bancario", "libras de 1920 · stock · mes · E-035 · no se rellena para cuadrar", open.bank_equity, 0},
+		{"Hueco bancario", "libras de 1920 · stock · mes · E-035 · activo menos pasivo, debe ser cero", open.bank_gap, 0},
+		{"Error de calibración", "indicador · stock · mes · A-09 · 1 si el PIB sale del rango de E-027", MacroCalibrationError(), 0},
+		{"Topes", "conteo · stock · mes · A-21 · brecha, inflación, tasa o precio en el tope", MacroClampCount(), 0},
 		{"Índice de precios", "índice · stock · mes · Phillips · 1000 es la base", _economy.macro_price_index / 100, 0},
 		{"Dinero nominal", "puntos de política · exógeno · mes · aún no es la base monetaria", cfg.islm_money_supply, 0},
 		{"Capacidad de carga", "plazas · stock · mes · vehículos · no es PIB", _economy.macro_cargo_capacity, 0},
 		{"Capital", "libras de 1920 · stock · mes · E-018 · formación menos depreciación", _economy.macro_capital, 0},
-		{"Fidelidad", "indicador · stock · corrida · F0 mide el juego · F2 no promete 100000x", 0, 0},
+		{"Calidad", "índice · stock · mes · AC-16 · 10000 es identidad limpia, sin error de calibración y sin topes", MacroRunQuality(), 0},
+		{"Fidelidad", "indicador · stock · corrida · F2 es el agregado · el juego de vehículos es F0", 2, 0},
 		{"Decisor", "indicador · stock · mes · regla determinista · el LLM no corre en el tick", 0, 0},
 	};
 	const int available = static_cast<int>(std::size(table));

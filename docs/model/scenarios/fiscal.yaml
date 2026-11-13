@@ -1,0 +1,21 @@
+experiment:
+  id: fiscal-debt
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 20
+  warmup_years: 1
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  shocks:
+    - variable: treasury.government_purchases
+      effective_period: 2030-01-01
+      effective_tick: 30
+      operation: add
+      value: 500
+  outputs: [gdp_real, public_debt, policy_rate, fx_nominal, current_account]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-02. Higher G is financed with debt. Money does not move.

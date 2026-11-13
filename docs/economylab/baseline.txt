@@ -1,0 +1,11 @@
+seed=872193
+months=240
+gdp=10000
+discrepancy=0
+debt=0
+money=10000
+exchange=9800
+equity=200
+bank_gap=0
+hash=0x7288bcad0e25ab5d
+note=Golden baseline of the integer laboratory. Potential is not copied from GDP when they diverge.

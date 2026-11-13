@@ -429,6 +429,8 @@ enum class SaveLoadVersion : uint16_t {
 	MacroDynamics, ///< Saveload version: 370\n Potential output, public debt and company investment feed the IS-LM model.
 	MacroLab, ///< Saveload version: 371\n Bond book, private debt, subsidies and the macro graph history.
 	MacroAccounts, ///< Saveload version: 372\n Output is anchored to the game, with the exogenous impulse and the price history stored apart.
+	MacroWorld, ///< Saveload version: 373\n Goods demand, rest-of-world growth and external bonds.
+	MacroBehavior, ///< Saveload version: 374\n Dividends, two-class consumption and the loan rate that companies pay.
 
 	MaxVersion, ///< Highest possible saveload version.
 };

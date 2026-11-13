@@ -96,6 +96,7 @@ void HandleCtrlChanged();
 void HandleMouseEvents();
 void UpdateWindows();
 void ChangeGameSpeed(bool enable_fast_forward);
+void SetGameSpeed(uint32_t speed);
 
 void DrawMouseCursor();
 void ScreenSizeChanged();

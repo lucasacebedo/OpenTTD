@@ -1,80 +1,335 @@
-# Public variables of the economy lab, conversion version 2.
-# A cargo piece, a current pound, a 1920 pound and a policy point are different units.
-# 1000 policy points equal the calibrated real GDP, or this month's transport sales before calibration.
-
+# Generated from lab::kRegister. conversion version 2.
 conversion_version: 2
 policy_points_per_calibrated_gdp: 1000
 payment_index_base: 65536
-
+model_version: economy-lab/1.0
 variables:
   - id: gdp_production
     unit: real_pounds
     kind: flow
     frequency: month
-    source: transport deliveries and infrastructure maintenance
+    source: transport value added minus route subsidies
+    version: economy-lab/1.0
     equation: E-006
-    code: _economy.macro_output
+  - id: gdp_expenditure
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: consumption, investment, government and net exports
+    version: economy-lab/1.0
+    equation: E-007
+  - id: statistical_discrepancy
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: production minus expenditure
+    version: economy-lab/1.0
+    equation: E-008
   - id: logistics_volume
     unit: cargo_pieces
     kind: flow
     frequency: month
-    source: accepted deliveries, kept by cargo type in the lab
+    source: accepted deliveries kept by cargo type
+    version: economy-lab/1.0
     equation: none
-    code: _economy.macro_game_output
-    note: Not GDP. Pieces of different cargoes are not a value.
-  - id: discrepancy
+  - id: potential_output
     unit: real_pounds
-    kind: flow
+    kind: stock
     frequency: month
-    source: national accounts
-    equation: E-008
-    code: _economy.macro_exogenous_output
+    source: calibrated level, population, capital and capacity
+    version: economy-lab/1.0
+    equation: E-027
+  - id: output_gap
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: goods demand relative to potential
+    version: economy-lab/1.0
+    equation: bridge
   - id: consumption
     unit: real_pounds
     kind: flow
     frequency: month
     source: passenger and mail tariffs
+    version: economy-lab/1.0
     equation: E-007
-    code: _economy.macro_consumption
   - id: investment
     unit: real_pounds
     kind: flow
     frequency: month
     source: construction and new vehicles
+    version: economy-lab/1.0
     equation: E-007
-    code: _economy.macro_investment
   - id: government_purchases
     unit: real_pounds
     kind: flow
     frequency: month
-    source: economy.islm_government_spending times calibrated GDP divided by 1000
+    source: 1000 policy points equal calibrated GDP
+    version: economy-lab/1.0
     equation: E-007
-    code: _economy.macro_government
+  - id: tax_revenue
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: tax rate and autonomous tax
+    version: economy-lab/1.0
+    equation: E-030
   - id: subsidies
     unit: real_pounds
     kind: flow
     frequency: month
-    source: extra profit of subsidised routes
+    source: route subsidy, a transfer
+    version: economy-lab/1.0
     equation: E-006
-    code: _economy.macro_subsidy_game
-  - id: potential_output
+  - id: exports
     unit: real_pounds
-    kind: stock
+    kind: flow
     frequency: month
-    source: one-time calibration, then population, capital and cargo capacity
-    equation: E-027
-    code: _economy.macro_natural_output
+    source: real exchange rate
+    version: economy-lab/1.0
+    equation: E-044
+  - id: imports
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: activity and the real exchange rate
+    version: economy-lab/1.0
+    equation: E-045
   - id: policy_rate
     unit: rate_bp
     kind: stock
     frequency: month
     source: Taylor rule
+    version: economy-lab/1.0
     equation: E-032
-    code: _economy.macro_interest_bp
+  - id: loan_rate
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: policy rate plus risk premium
+    version: economy-lab/1.0
+    equation: E-038
+  - id: world_rate
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: exogenous world rate
+    version: economy-lab/1.0
+    equation: E-051
+  - id: risk_premium
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: public debt over GDP
+    version: economy-lab/1.0
+    equation: E-049
   - id: inflation
     unit: rate_bp
     kind: flow
     frequency: month
     source: expectations-augmented Phillips curve
+    version: economy-lab/1.0
     equation: Phillips
-    code: _economy.macro_inflation_bp
+  - id: expected_inflation
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: adaptive expectations
+    version: economy-lab/1.0
+    equation: bridge
+  - id: unemployment
+    unit: rate_bp
+    kind: stock
+    frequency: month
+    source: Okun bridge
+    version: economy-lab/1.0
+    equation: E-022
+  - id: population
+    unit: persons
+    kind: stock
+    frequency: month
+    source: town populations
+    version: economy-lab/1.0
+    equation: none
+  - id: labour_force
+    unit: persons
+    kind: stock
+    frequency: month
+    source: 45 percent of population
+    version: economy-lab/1.0
+    equation: E-020
+  - id: employment
+    unit: persons
+    kind: stock
+    frequency: month
+    source: labour force times one minus unemployment
+    version: economy-lab/1.0
+    equation: E-022
+  - id: exchange
+    unit: permyriad
+    kind: stock
+    frequency: month
+    source: spot rate
+    version: economy-lab/1.0
+    equation: E-053
+  - id: fundamental_exchange
+    unit: permyriad
+    kind: stock
+    frequency: month
+    source: purchasing-power parity
+    version: economy-lab/1.0
+    equation: E-052
+  - id: overshooting
+    unit: indicator
+    kind: stock
+    frequency: month
+    source: spot above the fundamental
+    version: economy-lab/1.0
+    equation: E-053
+  - id: public_debt
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: treasury bonds
+    version: economy-lab/1.0
+    equation: E-031
+  - id: debt_service
+    unit: real_pounds
+    kind: flow
+    frequency: month
+    source: contracted coupon
+    version: economy-lab/1.0
+    equation: E-031
+  - id: bank_loans
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: company loans
+    version: economy-lab/1.0
+    equation: E-035
+  - id: bank_deposits
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: household saving
+    version: economy-lab/1.0
+    equation: E-034
+  - id: bank_reserves
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: vault cash and reserve balances
+    version: economy-lab/1.0
+    equation: E-033
+  - id: bank_bonds
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: treasury bonds held by banks
+    version: economy-lab/1.0
+    equation: E-035
+  - id: bank_equity
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: opening equity plus balanced flows
+    version: economy-lab/1.0
+    equation: E-035
+  - id: bank_gap
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: bank assets minus liabilities
+    version: economy-lab/1.0
+    equation: E-035
+  - id: central_bank_bonds
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: open-market holdings
+    version: economy-lab/1.0
+    equation: E-033
+  - id: base_money
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: currency plus reserve balances
+    version: economy-lab/1.0
+    equation: E-033
+  - id: official_reserves
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: external reserve asset
+    version: economy-lab/1.0
+    equation: BOP
+  - id: household_bonds
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: treasury bonds held outside banks and the central bank
+    version: economy-lab/1.0
+    equation: E-031
+  - id: nfa
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: net foreign assets
+    version: economy-lab/1.0
+    equation: BOP
+  - id: price_index
+    unit: index
+    kind: stock
+    frequency: month
+    source: Phillips price level, 1000 is the base
+    version: economy-lab/1.0
+    equation: Phillips
+  - id: money_supply
+    unit: policy_points
+    kind: stock
+    frequency: month
+    source: exogenous nominal money setting
+    version: economy-lab/1.0
+    equation: none
+  - id: cargo_capacity
+    unit: slots
+    kind: stock
+    frequency: month
+    source: installed vehicle slots
+    version: economy-lab/1.0
+    equation: none
+  - id: capital
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: gross investment minus depreciation
+    version: economy-lab/1.0
+    equation: E-018
+  - id: calibration_error
+    unit: indicator
+    kind: stock
+    frequency: month
+    source: 1 when GDP leaves the E-027 range
+    version: economy-lab/1.0
+    equation: A-09
+  - id: clamp_count
+    unit: count
+    kind: stock
+    frequency: month
+    source: series sitting on a safety clamp
+    version: economy-lab/1.0
+    equation: A-21
+  - id: run_quality
+    unit: permyriad
+    kind: stock
+    frequency: month
+    source: 10000 when the identity, calibration and clamps are clean
+    version: economy-lab/1.0
+    equation: AC-16
+  - id: expected_loss
+    unit: real_pounds
+    kind: stock
+    frequency: month
+    source: exposure times PD times LGD
+    version: economy-lab/1.0
+    equation: PD*LGD*EAD

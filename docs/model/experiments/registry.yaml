@@ -1,0 +1,48 @@
+model_version: economy-lab/1.0
+registered_before_results: true
+seeds: [101, 102, 103, 104, 105]
+experiments:
+  - id: EXP-00
+    file: scenarios/baseline.yaml
+    treatment: none
+    outcome: identities and a zero debt path
+  - id: EXP-01
+    file: scenarios/dornbusch.yaml
+    treatment: money times 1.10 at tick 30
+    outcome: overshooting and an audit row
+  - id: EXP-02
+    file: scenarios/fiscal.yaml
+    treatment: government purchases plus 500
+    outcome: debt rises by 500 and money stays
+  - id: EXP-03
+    file: scenarios/taylor.yaml
+    treatment: hawkish plus 200 bp against dovish minus 100 bp
+    outcome: the hawkish spot rate is lower
+  - id: EXP-04
+    file: scenarios/world-rate.yaml
+    treatment: world rate plus 100 bp
+    outcome: spot rate 9600
+  - id: EXP-05
+    file: scenarios/sudden-stop.yaml
+    treatment: imports plus 800
+    outcome: current account -800
+  - id: EXP-06
+    file: scenarios/bank-crisis.yaml
+    treatment: default probability plus 100 bp
+    outcome: expected loss 20
+  - id: EXP-07
+    file: scenarios/twin-crisis.yaml
+    treatment: money times 1.10 and default probability plus 100 bp
+    outcome: both shocks share tick 30
+  - id: EXP-08
+    file: scenarios/trade.yaml
+    treatment: imports minus 200
+    outcome: expenditure identity holds
+  - id: EXP-09
+    file: scenarios/capital-controls.yaml
+    treatment: world rate plus 300 bp at tick 60
+    outcome: tick 30 is unchanged and money stays
+  - id: EXP-10
+    file: scenarios/agents.yaml
+    treatment: replay provider, no network
+    outcome: the recorded decision matches and the secret stays redacted

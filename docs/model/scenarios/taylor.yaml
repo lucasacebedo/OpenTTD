@@ -1,0 +1,26 @@
+experiment:
+  id: taylor-hawk-dove
+  model_version: economy-lab/1.0
+  fidelity: F2
+  horizon_years: 20
+  warmup_years: 1
+  seeds: [101, 102, 103, 104, 105]
+  baseline_calibration: emerging_small_open_v1
+  shocks:
+    - variable: central_bank.policy_rate
+      effective_period: 2030-01-01
+      effective_tick: 30
+      operation: add
+      value: 200
+    - variable: central_bank.policy_rate
+      effective_period: 2030-01-01
+      effective_tick: 30
+      operation: add
+      value: -100
+  outputs: [inflation_cpi, policy_rate, fx_nominal, unemployment, credit]
+  stopping:
+    long_run_equilibrium:
+      window_months: 60
+      max_abs_slope: 0.0001
+      max_market_residual_ppm: 50
+  hypothesis: EXP-03. The hawkish rate appreciates the currency against the dovish rate.

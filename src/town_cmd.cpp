@@ -23,6 +23,7 @@
 #include "company_func.h"
 #include "industry.h"
 #include "macro_economy.h"
+#include "economy_func.h"
 #include "station_base.h"
 #include "station_func.h"
 #include "waypoint_base.h"
@@ -892,7 +893,16 @@ static void TownTickHandler(Town *t)
 	if (t->flags.Test(TownFlag::IsGrowing)) {
 		TownExpandModes modes{TownExpandMode::Buildings};
 		if (_settings_game.economy.allow_town_roads) modes.Set(TownExpandMode::Roads);
-		int i = (int)t->grow_counter - 1;
+		int remove = 1;
+		if (_settings_game.economy.islm_enabled && _economy.macro_ok != 0) {
+			const uint incentive = MacroTownIncentivePermyriad(true, t->growth_rate);
+			const uint extra = incentive > 10000 ? incentive - 10000 : 0;
+			if (extra > 0) {
+				const uint period = std::max<uint>(1, 10000 / extra);
+				if (period == 1 || t->grow_counter % period == 0) remove++;
+			}
+		}
+		int i = (int)t->grow_counter - remove;
 		if (i < 0) {
 			if (GrowTown(t, modes)) {
 				i = t->growth_rate;

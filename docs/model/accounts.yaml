@@ -1,0 +1,18 @@
+model_version: economy-lab/1.0
+tolerance: 0
+sectors:
+  - id: nation
+    identity: gdp_production = consumption + investment + government + exports - imports + statistical_discrepancy
+    gap: statistical_discrepancy
+  - id: banks
+    identity: loans + reserves + bonds = deposits + equity + provision
+    gap: bank_gap
+  - id: treasury
+    identity: public_debt = bank_bonds + central_bank_bonds + household_bonds
+    gap: treasury_gap
+  - id: central_bank
+    identity: central_bank_bonds + official_reserves = reserve_liability + base_money
+    gap: cb_gap
+  - id: external
+    identity: exports - imports + capital_inflow = reserve_change
+    gap: external_gap
